@@ -1,0 +1,12 @@
+main: battleroyale.Main
+name: BattleRoyale
+version: 1.0.0
+commands:
+  battleroyale:
+    usage: "/battleroyale help"
+
+permissions:
+  op:
+    default: op
+  player:
+    default: true

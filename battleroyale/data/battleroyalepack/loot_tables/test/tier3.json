@@ -1,0 +1,115 @@
+{
+
+    "type": "minecraft:chest",
+    "pools": [
+        {
+            "rolls": 20,
+            "entries":[
+                
+                {
+                    "type": "item",
+                    "name": "minecraft:diamond_sword",
+                    "weight":2,
+                    "quality":1,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"eeeeeeee"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"ぴeaeaぢゅeeeaeaょぉっよぃ"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type":"group",
+                    "children":[
+                        {
+                            "type": "item",
+                    "name": "minecraft:diamond_axe",
+                    "weight":2,
+                    "quality":10,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"ぴぃきゅーsasasasasaのたま"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"ぴぃきゅーsaaがないeesaefみなぃょ"
+                                }
+                            ]
+                        }
+                    ]
+                        },
+                        {
+                            "type": "item",
+                    "name": "minecraft:iron_hoe",
+                    "weight":2,
+                    "quality":10,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"にせfeafaefasafーぢゅう"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"にfaせfafaだょぉ"
+                                }
+                            ]
+                        }
+                    ]
+                        },
+                        {
+                            "type": "item",
+                    "name": "minecraft:wooden_hoe",
+                    "weight":2,
+                    "quality":10,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"ぴfeafafaゅーぢゅfafaうもどき"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"ぴぃきゅafafaぢゅfeafaめっちゃょfafaわぃ"
+                                }
+                            ]
+                        }
+                    ]
+                        }
+                    ]
+                }
+            ]
+    }
+]
+
+
+} 

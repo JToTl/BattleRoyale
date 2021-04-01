@@ -1,0 +1,115 @@
+{
+
+    "type": "minecraft:chest",
+    "pools": [
+        {
+            "rolls": 20,
+            "entries":[
+                
+                {
+                    "type": "item",
+                    "name": "minecraft:iron_ingot",
+                    "weight":10,
+                    "quality":1,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"ごみ"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"つかえねえなぁ！"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type":"group",
+                    "children":[
+                        {
+                            "type": "item",
+                    "name": "minecraft:diamond",
+                    "weight":2,
+                    "quality":2,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"げきれああいてむ"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"ちょーれあだよ"
+                                }
+                            ]
+                        }
+                    ]
+                        },
+                        {
+                            "type": "item",
+                    "name": "minecraft:gold_ingot",
+                    "weight":20,
+                    "quality":3,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"test"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"ttttt"
+                                }
+                            ]
+                        }
+                    ]
+                        },
+                        {
+                            "type": "item",
+                    "name": "minecraft:wooden_sword",
+                    "weight":6,
+                    "quality":2,
+                    "functions":[
+                        {
+                            "function":"minecraft:set_nbt",
+                            "tag":"{}"
+                        },
+                        {
+                            "function":"minecraft:set_name",
+                            "name":"aaaaa"
+                        },
+                        {
+                            "function":"minecraft:set_lore",
+                            "lore":[
+                                {
+                                    "text":"aaaaaaa"
+                                }
+                            ]
+                        }
+                    ]
+                        }
+                    ]
+                }
+            ]
+    }
+]
+
+
+} 
