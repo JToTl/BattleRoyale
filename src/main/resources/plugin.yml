@@ -1,6 +1,7 @@
 main: battleroyale.Main
 name: BattleRoyale
 version: 1.0.0
+depend: [NBTAPI]
 commands:
   battleroyale:
     usage: "/battleroyale help"
