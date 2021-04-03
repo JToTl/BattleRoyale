@@ -175,6 +175,9 @@ public class Commands implements CommandExecutor {
                     Bukkit.getServer().broadcastMessage(p.getName()+"が参加者登録を解除しました");
                 }
                 break;
+            case "survivor":
+                if(GlobalClass.runningGame!=null) p.sendMessage("残り人数"+GlobalClass.runningGame.LivingPlayers()+"人");
+                break;
         }
     return true;
     }

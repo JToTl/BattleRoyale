@@ -6,7 +6,11 @@ import de.tr7zw.nbtapi.NBTTileEntity;
 import org.bukkit.*;
 
 
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Skull;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
 import org.bukkit.boss.BarStyle;
@@ -14,6 +18,7 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -42,8 +47,42 @@ public class BattleRoyaleData{
     int sumRandomWeight=0,maxTier=0,reductionTimes;
     BossBar bossBar=Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID, BarFlag.CREATE_FOG);
 
-    class PlayerData{
-        int killCount=0;
+    class PlayerData {//正直これいらんかもしれんとか書いてたけどめっちゃいる
+        UUID uuid;
+        int killCount = 0;
+        Location deadLocations[] = new Location[2];
+        Material[] deadLocationMaterials=new Material[2];
+        BlockData[] deadLocationBlockData=new BlockData[2];
+        Inventory inv;
+
+        public void generatePlayersChest(Player player){
+            deadLocations[0]=player.getLocation();
+            deadLocations[1]=player.getLocation().add(0,1,0);
+            deadLocationBlockData[0]=deadLocations[0].getBlock().getBlockData();
+            deadLocationBlockData[1]=deadLocations[1].getBlock().getBlockData();
+            inv.setContents(player.getInventory().getContents());
+            deadLocations[0].getBlock().setType(Material.CHEST);
+            ((Chest) deadLocations[0].getBlock().getState()).setCustomName(String.valueOf(uuid));
+            deadLocations[1].getBlock().setType(Material.PLAYER_HEAD);
+            Block skullBlock =deadLocations[1].getBlock();
+            skullBlock.setType(Material.PLAYER_HEAD);
+            BlockState state = skullBlock.getState();
+            Skull skull = (Skull) state;
+            skull.setOwningPlayer(player);
+            skull.update();
+        }
+
+        private void resetBlock(){
+            if(deadLocations[0]!=null){
+                deadLocations[0].getBlock().setBlockData(deadLocationBlockData[0]);
+                deadLocations[1].getBlock().setBlockData(deadLocationBlockData[1]);
+            }
+        }
+
+        PlayerData(Player player){
+            uuid=player.getUniqueId();
+            inv=Bukkit.createInventory(null,45,player.getName()+"のインベントリ");
+        }
     }
 
     class PlayGround {//これクラスとして作らなくてよくな〜い？
@@ -92,11 +131,9 @@ public class BattleRoyaleData{
         }
 
         private void removePlayersChest(){
-            for(Location location:playersChestLocation){
-                if(location.getBlock().getState() instanceof Chest){
-                    Chest chest= (Chest) location.getBlock().getState();
-                    chest.getInventory().setContents(new ItemStack[]{});
-                    location.getBlock().setType(Material.AIR);
+            for(PlayerData playerData:playerList.values()){
+                if(deadPlayerList.contains(playerData.uuid)){
+                    playerData.resetBlock();
                 }
             }
         }
@@ -105,7 +142,7 @@ public class BattleRoyaleData{
             world.getWorldBorder().setSize(1000000);
         }
 
-        private Location generateShipRoute(){//現在のエリアの辺上のうちの一点（Yは200)をlocationとして返す
+        private Location generateShipRoute(){//現在のエリアの辺上のうちの一点から中心に向かって１進めた場所をlocationとして返す
             Location rlocation=new Location(world,currentCenter[0],fieldConfig.getDouble("dropShipAltitude"),currentCenter[1]);
             Double l=nextwidth*(((Math.pow(2,0.5))-1)*random.nextDouble() +1);
             int ponx,ponz=1;
@@ -116,6 +153,7 @@ public class BattleRoyaleData{
             else rlocation.add(ponx*Math.sqrt(l*l-nextwidth*nextwidth),0,ponz*nextwidth);
             rlocation.setDirection(new Vector(currentCenter[0]-rlocation.getX(),0,currentCenter[1]-rlocation.getZ()));
             rlocation.setDirection(new Vector(rlocation.getDirection().getX()/rlocation.getDirection().length()/2,0,rlocation.getDirection().getZ()/rlocation.getDirection().length()/2));
+            rlocation.add(rlocation.getDirection().getX()/rlocation.getDirection().length(),0,rlocation.getDirection().getZ()/rlocation.getDirection().length());
             return rlocation;
         }
 
@@ -206,12 +244,12 @@ public class BattleRoyaleData{
 
         public void generateShip(){
             int count=0;
-            Location location=generateShipRoute();
+            Location location=generateShipRoute(),tplocation=location.add(0,-3,0);
             Vector vector=location.getDirection().crossProduct(new Vector(0,1,0));
             vector.setX(vector.getX()/vector.length());
             vector.setZ(vector.getZ()/vector.length());
             for(UUID uuid:playerList.keySet()){
-                Objects.requireNonNull(Bukkit.getPlayer(uuid)).teleport(location);
+                Objects.requireNonNull(Bukkit.getPlayer(uuid)).teleport(tplocation);
                 if(count%2==0){
                     location.add(vector);
                     Entity entity=world.spawnEntity(location,EntityType.WITHER_SKULL);
@@ -347,6 +385,8 @@ public class BattleRoyaleData{
         playGround.generateShip();
         setPlayerStatus();
         playGround.putLootChest();
+        Bukkit.getServer().broadcastMessage("§3バトルロワイヤルが始まりました！最後の一人を賭けて戦いましょう！");
+        Bukkit.getServer().broadcastMessage("§3参加人数"+LivingPlayers()+"人");
     }
 
     private void interruptThreads(){
@@ -361,7 +401,7 @@ public class BattleRoyaleData{
         if(playerList.containsKey(p.getUniqueId())){
             return false;
         }
-        playerList.put(p.getUniqueId(),new PlayerData());
+        playerList.put(p.getUniqueId(),new PlayerData(p));
         return true;
     }
 
@@ -378,6 +418,14 @@ public class BattleRoyaleData{
                 p.removePotionEffect(potion.getType());
             }
         }
+    }
+
+    public int LivingPlayers(){
+        int r=0;
+        for(UUID uuid:playerList.keySet()){
+            if(!deadPlayerList.contains(uuid))r=r+1;
+        }
+        return r;
     }
 
     public ItemStack createCustomItem (final Material material, final String name, final String... lore){//デバッグのためpublic

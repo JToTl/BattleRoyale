@@ -14,8 +14,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -26,28 +28,12 @@ import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 
 public class EventList implements Listener {
 
-    public EventList(Plugin plugin){
-        plugin.getServer().getPluginManager().registerEvents(this,plugin);
-    }
-
-    private void generatePlayersChest(Player player){
-        int count=0,i=0;
-        ItemStack[] itemStacks=player.getInventory().getContents();
-        Location[] locations={player.getLocation(),player.getLocation().add(0,1,0)};
-        locations[0].getBlock().setType(Material.CHEST);
-        locations[1].getBlock().setType(Material.CHEST);
-        Chest[] chests={(Chest) locations[0].getBlock().getState(),(Chest) locations[1].getBlock().getState()};
-        for(ItemStack itemStack:itemStacks){
-            if(itemStack!=null) {
-                chests[i].getInventory().addItem(itemStack);
-                count = count + 1;
-                if (count == 27) i = 1;
-            }
-        }
-        GlobalClass.runningGame.playGround.playersChestLocation.addAll(Arrays.asList(locations));
+    public EventList(Plugin plugin) {
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     private String getDisplayName(ItemStack itemStack) {
@@ -59,13 +45,12 @@ public class EventList implements Listener {
 
     @EventHandler
     public void DropFromDropShip(final EntityDismountEvent e) {
-        if (e.getEntity() instanceof Player) {
+        if (e.getEntity() instanceof Player&&GlobalClass.runningGame!=null) {
             Player player=(Player)e.getEntity();
             if (getDisplayName(player.getInventory().getChestplate()).equals("降下用エリトラ")) {
-                Location location=e.getDismounted().getLocation();
-                location.add(0,-4,0);
-                player.teleport(location);
+                e.getEntity().getLocation().setY(e.getEntity().getLocation().getY()-4);
                 player.setGliding(true);
+                e.getEntity().eject();
             }
         }
     }
@@ -96,10 +81,13 @@ public class EventList implements Listener {
         if(GlobalClass.runningGame.playerList.containsKey(e.getPlayer().getUniqueId())) {
             if (!GlobalClass.runningGame.isRunning) {
                 GlobalClass.runningGame.playerList.remove(e.getPlayer().getUniqueId());
-            } else if (GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())) {
-                generatePlayersChest(e.getPlayer());
+            } else if (!GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())) {
+                GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).generatePlayersChest(e.getPlayer());
                 GlobalClass.runningGame.deadPlayerList.add(e.getPlayer().getUniqueId());
                 e.getPlayer().setGameMode(GameMode.SPECTATOR);
+                if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
+                    GlobalClass.runningGame.endGame();
+                }
             }
         }
     }
@@ -173,10 +161,10 @@ public class EventList implements Listener {
     }
 
     @EventHandler//プレイヤーが死んだら生存人数のやつとかなんとかをいじって、終了ならスレッド止めてなんやかんやしましょう
-    public void PlayerKilledEvent(final PlayerDeathEvent e){
+    public void PlayerKilledEvent(PlayerDeathEvent e){
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&&GlobalClass.runningGame.playerList.containsKey(e.getEntity().getPlayer().getUniqueId())) {
             GlobalClass.runningGame.deadPlayerList.add(e.getEntity().getPlayer().getUniqueId());
-            generatePlayersChest(e.getEntity());
+            GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).generatePlayersChest(e.getEntity().getPlayer());
             e.getEntity().getPlayer().setGameMode(GameMode.SPECTATOR);
             if (e.getEntity().getKiller() != null) {
                 Player killer = e.getEntity().getKiller();
@@ -187,6 +175,21 @@ public class EventList implements Listener {
             if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
                 GlobalClass.runningGame.endGame();
             }
+        }
+    }
+
+    @EventHandler
+    public void PlayerRespawn(PlayerRespawnEvent e){
+        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
+            e.getPlayer().teleport(GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).deadLocations[0]);
+        }
+    }
+
+    @EventHandler
+    public void OpenDeadPlayersInv(PlayerInteractEvent e){
+        if(GlobalClass.runningGame!=null&&e.getClickedBlock()!=null&&e.getClickedBlock().getBlockData() instanceof Chest&& ((Chest) e.getClickedBlock().getBlockData()).getCustomName() != null && GlobalClass.runningGame.playerList.containsKey(UUID.fromString(((Chest)e.getClickedBlock().getBlockData()).getCustomName()))){
+            e.getPlayer().openInventory(GlobalClass.runningGame.playerList.get(UUID.fromString(((Chest)e.getClickedBlock().getBlockData()).getCustomName())).inv);
+            e.setCancelled(true);
         }
     }
 
