@@ -389,6 +389,9 @@ public class BattleRoyaleData{
         playGround.generateShip();
         setPlayerStatus();
         playGround.putLootChest();
+        for (Player p : Bukkit.getOnlinePlayers()){
+            if (!playerList.containsKey(p.getUniqueId()) && !p.isOp())p.setGameMode(GameMode.SPECTATOR);
+        }
         Bukkit.getServer().broadcastMessage("§3バトルロワイヤルが始まりました！最後の一人を賭けて戦いましょう！");
         Bukkit.getServer().broadcastMessage("§3参加人数"+LivingPlayers()+"人");
     }
