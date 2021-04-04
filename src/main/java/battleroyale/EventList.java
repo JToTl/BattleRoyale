@@ -1,5 +1,6 @@
 package battleroyale;
 
+import com.destroystokyo.paper.event.entity.ProjectileCollideEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -96,10 +97,11 @@ public class EventList implements Listener {
     public void GenerateCarePackage(EntityExplodeEvent e){
         if(GlobalClass.runningGame==null||!e.getEntity().getType().equals(EntityType.WITHER_SKULL))return;
         if(Objects.equals(e.getEntity().getCustomName(), "carepackage")) {
+            Bukkit.getServer().broadcastMessage("通った");
             e.setCancelled(true);
-            e.getEntity().eject();
             GlobalClass.runningGame.playGround.generateCarePackage(e.getLocation());
             GlobalClass.runningGame.playGround.carePackageLocation.add(e.getLocation());
+            e.getEntity().eject();
         }
         else if(Objects.equals(e.getEntity().getCustomName(), "dropship")){
             e.setCancelled(true);
@@ -138,10 +140,20 @@ public class EventList implements Listener {
     }
 
     @EventHandler
-    public void RightClickEvent(final PlayerInteractEvent e){
-        Player p=e.getPlayer();
-        if(GlobalClass.runningGame==null)return;
-        if(!e.getAction().equals(Action.RIGHT_CLICK_AIR)&&!e.getAction().equals(Action.RIGHT_CLICK_BLOCK))return;
+    public void RightClickEvent(final PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        if (GlobalClass.runningGame == null) return;
+        if (!e.getAction().equals(Action.RIGHT_CLICK_AIR) && !e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
+        if(e.getClickedBlock()!=null) {
+            if (e.getClickedBlock().getState() instanceof Chest) {
+                if (((Chest) e.getClickedBlock().getState()).getCustomName() != null) {
+                    if (GlobalClass.runningGame.playerList.containsKey(UUID.fromString(((Chest) e.getClickedBlock().getState()).getCustomName()))) {
+                        e.getPlayer().openInventory(GlobalClass.runningGame.playerList.get(UUID.fromString(((Chest) e.getClickedBlock().getState()).getCustomName())).inv);
+                        e.setCancelled(true);
+                    }
+                }
+            }
+        }
         if(!p.getInventory().getItemInMainHand().getType().equals(Material.COMPASS))return;
         Location location=new Location(GlobalClass.runningGame.world,GlobalClass.runningGame.playGround.nextCenter[0],100,GlobalClass.runningGame.playGround.nextCenter[1]),
         plocation=p.getLocation();
@@ -179,6 +191,13 @@ public class EventList implements Listener {
     }
 
     @EventHandler
+    public void ProtectDropShip(ProjectileCollideEvent e){
+        if(e.getEntity().getCustomName().equals("dropship")){
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void PlayerRespawn(PlayerRespawnEvent e){
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
             e.getPlayer().teleport(GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).deadLocations[0]);
@@ -186,20 +205,17 @@ public class EventList implements Listener {
     }
 
     @EventHandler
-    public void OpenDeadPlayersInv(PlayerInteractEvent e){
-        if(GlobalClass.runningGame!=null&&e.getClickedBlock()!=null&&e.getClickedBlock().getBlockData() instanceof Chest&& ((Chest) e.getClickedBlock().getBlockData()).getCustomName() != null && GlobalClass.runningGame.playerList.containsKey(UUID.fromString(((Chest)e.getClickedBlock().getBlockData()).getCustomName()))){
-            e.getPlayer().openInventory(GlobalClass.runningGame.playerList.get(UUID.fromString(((Chest)e.getClickedBlock().getBlockData()).getCustomName())).inv);
-            e.setCancelled(true);
-        }
-    }
-
-    @EventHandler
     public void DeleteElytra(final EntityToggleGlideEvent e){
         if(GlobalClass.runningGame!=null&&e.getEntity().getType().equals(EntityType.PLAYER)){
             Player player=(Player) e.getEntity();
-            if(player.isGliding()&&GlobalClass.runningGame.isRunning&&getDisplayName(player.getInventory().getChestplate()).equals("降下用エリトラ")) {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1, 200));
-                    player.getInventory().getChestplate().setType(Material.AIR);
+            if(player.isGliding()) {
+                if (GlobalClass.runningGame.isRunning) {
+                    if (getDisplayName(player.getInventory().getChestplate()).equals("降下用エリトラ")) {
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1, 200));
+                        player.getInventory().clear();
+                        player.getInventory().addItem(new ItemStack(Material.COMPASS,1));
+                    }
+                }
             }
         }
     }

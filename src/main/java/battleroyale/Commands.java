@@ -7,10 +7,14 @@ import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+
+import java.util.Objects;
 
 
 public class Commands implements CommandExecutor {
@@ -37,6 +41,7 @@ public class Commands implements CommandExecutor {
                     if (args.length < 2) break;
                     else if (GlobalClass.editedConfig == null) {
                         p.sendMessage("設定するファイルを選択してください /bbattleroyale editfield <ファイル名(.ymlまで)>");
+                        return true;
                     }
                     switch (args[1]) {
                         case "delete":
@@ -153,6 +158,9 @@ public class Commands implements CommandExecutor {
                     p.sendMessage("バトルロワイヤルを中断しました");
                     break;
                 case "test":
+                    Entity entity=p.getWorld().spawnEntity(p.getLocation().add(0,20,0), EntityType.WITHER_SKULL);
+                    entity.setCustomName("carepackage");
+
             }
         }
         switch (args[0]) {

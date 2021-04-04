@@ -62,7 +62,9 @@ public class BattleRoyaleData{
             deadLocationBlockData[1]=deadLocations[1].getBlock().getBlockData();
             inv.setContents(player.getInventory().getContents());
             deadLocations[0].getBlock().setType(Material.CHEST);
-            ((Chest) deadLocations[0].getBlock().getState()).setCustomName(String.valueOf(uuid));
+            Chest chest=(Chest) deadLocations[0].getBlock().getState();
+            chest.setCustomName(String.valueOf(uuid));
+            chest.update();
             deadLocations[1].getBlock().setType(Material.PLAYER_HEAD);
             Block skullBlock =deadLocations[1].getBlock();
             skullBlock.setType(Material.PLAYER_HEAD);
@@ -253,6 +255,7 @@ public class BattleRoyaleData{
                 if(count%2==0){
                     location.add(vector);
                     Entity entity=world.spawnEntity(location,EntityType.WITHER_SKULL);
+                    entity.setCustomName("dropship");
                     entity.setInvulnerable(true);
                     entity.addPassenger(Objects.requireNonNull(Bukkit.getPlayer(uuid)));
                     ejectEntityList.add(entity);
@@ -260,6 +263,7 @@ public class BattleRoyaleData{
                 else{
                     location.add(-2*vector.getX(),0,-2*vector.getZ());
                     Entity entity=world.spawnEntity(location,EntityType.WITHER_SKULL);
+                    entity.setCustomName("dropship");
                     entity.setInvulnerable(true);
                     entity.addPassenger(Objects.requireNonNull(Bukkit.getPlayer(uuid)));
                     location.add(location.getDirection().getX()/location.getDirection().length(),0,location.getDirection().getZ()/location.getDirection().length());
