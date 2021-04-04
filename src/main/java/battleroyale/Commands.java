@@ -118,6 +118,7 @@ public class Commands implements CommandExecutor {
                 case "cancel":
                     if (GlobalClass.runningGame == null) {
                         p.sendMessage("ゲームが存在しません");
+                        return true;
                     } else if (GlobalClass.runningGame.isRunning) {
                         p.sendMessage("既にゲームが開始されています 中止したい場合は/battleroyale stop を使用してください");
                         return true;
