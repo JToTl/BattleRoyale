@@ -1,0 +1,46 @@
+firstCenter: #初期エリアの中心
+  X: 0
+  Z: 0
+firstWidth: 500 #初期エリアのサイズ（一辺の二分の一)
+world: brworld #バトロワが行われるワールドの名前
+generatingRate: 1 #チェストの生成率(0~1.0)
+randomTierWeight: #チェストのTierをランダムに指定した場合のそれぞれのTierの重み（Tierの最大値計測も兼ねてるので、ランダムを使わないとしても書くこと）
+  Tier1: 1
+  Tier2: 2
+  Tier3: 3
+  Tier4: 4
+carePackage: #上から、ケアパケ降下判定の頻度/ケアパケのTier/判定成功確率 頻度は〜秒間隔という意味
+  frequency: 10
+  Tier: 4
+  rate: 0.8
+dropShipAltitude: 250 #ドロップシップの高さ
+playerHealth: 20 #プレイヤーの初期体力
+firstAreaWaitTime: 10 #始めの縮小エリアが決定されるまでの時間
+areaReduction: #エリア縮小のフェーズ
+  '1': #1から順番に増やしましょう
+    waitTime: 10 #縮小までの待機時間
+    executeTime: 30 #縮小にかかる時間
+    reductionRate: 0.3 #縮小率
+    spawnableCarePackage: true #ケアパケが降るかどうか
+    areaDamage: 2 #エリアのダメージ
+    areaDamageBuffer: 1 #エリアのバッファー
+  '2':
+    waitTime: 10
+    executeTime: 30
+    reductionRate: 0.5
+    spawnableCarePackage: true
+    areaDamage: 4
+    areaDamageBuffer: 1
+  '3':
+    waitTime: 10
+    executeTime: 30
+    reductionRate: 0.2
+    spawnableCarePackage: false
+    areaDamage: 8
+    areaDamageBuffer: 1
+chestPosition: #チェストの位置を指定 ワールド側から設定できるので直接いじる必要はナシ
+  2|72|41:
+    X: 2
+    Y: 72
+    Z: 41
+    Tier: 3
