@@ -1,6 +1,6 @@
-main: battleroyale.Main
 name: BattleRoyale
-version: 1.0.0
+version: ${project.version}
+main: ltotj.minecraft.battleroyale.Main
 api-version: 1.16
 depend: [NBTAPI]
 commands:
