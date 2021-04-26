@@ -1,4 +1,4 @@
-package battleroyale;
+package ltotj.minecraft.battleroyale;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

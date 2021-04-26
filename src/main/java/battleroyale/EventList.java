@@ -1,6 +1,8 @@
-package battleroyale;
+package ltotj.minecraft.battleroyale;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.entity.ProjectileCollideEvent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -37,7 +39,12 @@ public class EventList implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    private String getDisplayName(ItemStack itemStack) {
+    private boolean matchName(ItemStack item,String name){
+        if(item==null||item.getItemMeta().displayName()==null)return false;
+        return item.getItemMeta().displayName().equals(Component.text(name));
+    }
+
+    private String getDisplayName(ItemStack itemStack) {//要書き換え
         if (itemStack!=null&&itemStack.getItemMeta() != null) {
             return itemStack.getItemMeta().getDisplayName();
         }
@@ -48,7 +55,7 @@ public class EventList implements Listener {
     public void DropFromDropShip(final EntityDismountEvent e) {
         if (e.getEntity() instanceof Player&&GlobalClass.runningGame!=null) {
             Player player=(Player)e.getEntity();
-            if (getDisplayName(player.getInventory().getChestplate()).equals("降下用エリトラ")) {
+            if (matchName(player.getInventory().getChestplate(),"降下用エリトラ")) {
                 e.getEntity().getLocation().setY(e.getEntity().getLocation().getY()-4);
                 player.setGliding(true);
                 e.getEntity().eject();
@@ -65,13 +72,16 @@ public class EventList implements Listener {
     public void CancelDamageByPlayer(EntityDamageByEntityEvent e){
         if(e.getDamager().getType().equals(EntityType.PLAYER)){
             Player player=(Player) e.getDamager();
-            if(getDisplayName(player.getInventory().getChestplate()).equals("降下用エリトラ"))e.setCancelled(true);
+            if(matchName(player.getInventory().getChestplate(),"降下用エリトラ"))e.setCancelled(true);
         }
     }
 
     @EventHandler
-    public void ClickElytra(InventoryClickEvent e){
-        if(getDisplayName(e.getCurrentItem()).equals("降下用エリトラ")){
+    public void InvClickEvent(InventoryClickEvent e){
+        if(e.getCurrentItem()!=null&&matchName(e.getCurrentItem(),"降下用エリトラ")){
+            e.setCancelled(true);
+        }
+        else if(GlobalClass.runningGame!=null&&!GlobalClass.runningGame.isRunning&&GlobalClass.runningGame.playerList.containsKey(e.getWhoClicked().getUniqueId())){
             e.setCancelled(true);
         }
     }
@@ -84,6 +94,7 @@ public class EventList implements Listener {
                 GlobalClass.runningGame.playerList.remove(e.getPlayer().getUniqueId());
             } else if (!GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())) {
                 GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).generatePlayersChest(e.getPlayer());
+                e.getPlayer().getInventory().clear();
                 GlobalClass.runningGame.deadPlayerList.add(e.getPlayer().getUniqueId());
                 e.getPlayer().setGameMode(GameMode.SPECTATOR);
                 if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
@@ -94,17 +105,10 @@ public class EventList implements Listener {
     }
 
     @EventHandler
-    public void GenerateCarePackage(EntityExplodeEvent e){
-        if(GlobalClass.runningGame==null||!e.getEntity().getType().equals(EntityType.WITHER_SKULL))return;
-        if(Objects.equals(e.getEntity().getCustomName(), "carepackage")) {
-            Bukkit.getServer().broadcastMessage("通った");
-            e.setCancelled(true);
-            GlobalClass.runningGame.playGround.generateCarePackage(e.getLocation());
-            GlobalClass.runningGame.playGround.carePackageLocation.add(e.getLocation());
-            e.getEntity().eject();
-        }
-        else if(Objects.equals(e.getEntity().getCustomName(), "dropship")){
-            e.setCancelled(true);
+    public void GenerateCarePackage(EntityRemoveFromWorldEvent e){
+        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&&Objects.equals(e.getEntity().getCustomName(), "carepackage")) {
+            GlobalClass.runningGame.playGround.generateCarePackage(e.getEntity().getLocation().add(0,1,0));
+            GlobalClass.runningGame.playGround.carePackageLocation.add(e.getEntity().getLocation().add(0,1,0));
         }
     }
 
@@ -156,7 +160,7 @@ public class EventList implements Listener {
         }
         if(!p.getInventory().getItemInMainHand().getType().equals(Material.COMPASS))return;
         Location location=new Location(GlobalClass.runningGame.world,GlobalClass.runningGame.playGround.nextCenter[0],100,GlobalClass.runningGame.playGround.nextCenter[1]),
-        plocation=p.getLocation();
+                plocation=p.getLocation();
         p.setCompassTarget(location);
         double d,l=Math.round(10.0*Math.sqrt(Math.pow(plocation.getX()-location.getX(),2)+Math.pow(plocation.getZ()-location.getZ(),2)))*0.1;
         d = Math.max(Math.abs(plocation.getX() - location.getX()), Math.abs(plocation.getZ() - location.getZ()));
@@ -167,7 +171,7 @@ public class EventList implements Listener {
 
         ItemStack item=p.getInventory().getItemInMainHand();
         ItemMeta meta=item.getItemMeta();
-        meta.setDisplayName("§a中心座標まであと§b"+l+"M "+string);
+        meta.displayName(Component.text("§a中心座標まであと§b"+l+"M "+string));
         item.setItemMeta(meta);
         p.getInventory().setItemInMainHand(item);
     }
@@ -177,6 +181,7 @@ public class EventList implements Listener {
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&&GlobalClass.runningGame.playerList.containsKey(e.getEntity().getPlayer().getUniqueId())) {
             GlobalClass.runningGame.deadPlayerList.add(e.getEntity().getPlayer().getUniqueId());
             GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).generatePlayersChest(e.getEntity().getPlayer());
+            e.getEntity().getInventory().clear();
             e.getEntity().getPlayer().setGameMode(GameMode.SPECTATOR);
             if (e.getEntity().getKiller() != null) {
                 Player killer = e.getEntity().getKiller();

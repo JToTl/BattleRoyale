@@ -1,4 +1,4 @@
-package battleroyale;
+package ltotj.minecraft.battleroyale;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,6 +20,49 @@ public class CustomConfig {
 
     public CustomConfig(Plugin plugin){
         this(plugin,"config.yml");
+    }
+
+    public boolean canGetString(String string){
+        try {
+            return config.getString(string)!=null;
+        }catch(Exception exception){
+            return false;
+        }
+    }
+
+    public boolean canGetList(String string){
+        try{
+            config.getConfigurationSection(string).getKeys(false);
+        }
+        catch(Exception exception){
+            return false;
+        }
+        return true;
+    }
+
+    public boolean canGetInt(String string){
+        try {
+            return config.getInt(string)!=0;
+        }catch(Exception exception){
+            return false;
+        }
+    }
+
+    public boolean canGetDouble(String string){
+        try {
+            return config.getDouble(string)!=0;
+        }catch(Exception exception){
+            return false;
+        }
+    }
+
+    public boolean canGetBoolean(String string){
+        try {
+            config.getBoolean(string);
+        }catch(Exception exception){
+            return false;
+        }
+        return true;
     }
 
     public CustomConfig(Plugin plugin,String fileName){

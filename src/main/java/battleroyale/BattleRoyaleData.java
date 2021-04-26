@@ -1,8 +1,9 @@
-package battleroyale;
+package ltotj.minecraft.battleroyale;
 
 import de.tr7zw.nbtapi.NBTContainer;
 import de.tr7zw.nbtapi.NBTEntity;
 import de.tr7zw.nbtapi.NBTTileEntity;
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 
 
@@ -27,7 +28,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -40,17 +40,17 @@ public class BattleRoyaleData{
     RunBattleRoyale runBattleRoyale=new RunBattleRoyale();//バトロワ実行スレッド
     boolean isRunning=false,isEnd;
     double probability;//チェストの生成率
-    private Plugin instance =Main.getPlugin(Main.class);//こんふぃぐよう
+    private final Plugin instance =Main.getPlugin(Main.class);//こんふぃぐよう
     World world;//バトロワが行われるワールド
     String itemfilename,mode="";//使うルートテーブルとモードの指定
     Random random=new Random();//ランダム用
     int sumRandomWeight=0,maxTier=0,reductionTimes;
     BossBar bossBar=Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID, BarFlag.CREATE_FOG);
 
-    class PlayerData {//正直これいらんかもしれんとか書いてたけどめっちゃいる
+    class PlayerData {
         UUID uuid;
         int killCount = 0;
-        Location deadLocations[] = new Location[2];
+        Location[] deadLocations = new Location[2];
         Material[] deadLocationMaterials=new Material[2];
         BlockData[] deadLocationBlockData=new BlockData[2];
         Inventory inv;
@@ -83,7 +83,7 @@ public class BattleRoyaleData{
 
         PlayerData(Player player){
             uuid=player.getUniqueId();
-            inv=Bukkit.createInventory(null,45,player.getName()+"のインベントリ");
+            inv= Bukkit.createInventory(null, 45, Component.text(player.getName() + "のインベントリ"));
         }
     }
 
@@ -92,7 +92,7 @@ public class BattleRoyaleData{
         double[] currentCenter=new double[2],nextCenter=new double[2];
         boolean isNarrowingArea=false,spawnableCarePackage=false;
         List<Location> carePackageLocation=new ArrayList<>(),playersChestLocation=new ArrayList<>();
-        List<Entity> ejectEntityList=new ArrayList<>();
+        List<UUID> ejectEntityList=new ArrayList<>();
         NarrowArea narrowArea;
         CarePackageThread carePackageThread=new CarePackageThread();
 
@@ -106,8 +106,9 @@ public class BattleRoyaleData{
         }
 
         private void removeEntities() {
-            for(Entity entity:ejectEntityList){
-                entity.eject();
+            for(UUID uuid:ejectEntityList){
+                Entity entity=Bukkit.getEntity(uuid);
+                if(entity!=null)entity.remove();
             }
         }
 
@@ -140,6 +141,8 @@ public class BattleRoyaleData{
             }
         }
 
+
+
         private void removeWorldBorder(){
             world.getWorldBorder().setSize(1000000);
         }
@@ -160,10 +163,10 @@ public class BattleRoyaleData{
         }
 
         private void setWorldBorder(){//最初につかう
-            world.getWorldBorder().setCenter(currentCenter[0],currentCenter[1]);
-            world.getWorldBorder().setSize(2*currentwidth);
-            world.getWorldBorder().setDamageBuffer(0);
-            world.getWorldBorder().setDamageAmount(1);
+            setWBCenter(currentCenter[0],currentCenter[1]);
+            setWBSize(2*currentwidth);
+            setWBBuffer(10);
+            setWBDamage(1);
         }
 
         private void newCenterPosition(double p){//今の中心座標から、新しい中心座標をランダム生成
@@ -222,8 +225,8 @@ public class BattleRoyaleData{
             witherSkull.addPassenger(carechest);
             NBTEntity chestEntity=new NBTEntity(carechest);
             chestEntity.mergeCompound(new NBTContainer("{ActiveEffects:[{Id:24,Amplifier:1,Duration:100000000,ShowParticles:0b}]}"));
-            ejectEntityList.add(entity);
-            ejectEntityList.add(carechest);
+            ejectEntityList.add(entity.getUniqueId());
+            ejectEntityList.add(carechest.getUniqueId());
         }
 
         public void generateCarePackage(Location location){
@@ -258,7 +261,7 @@ public class BattleRoyaleData{
                     entity.setCustomName("dropship");
                     entity.setInvulnerable(true);
                     entity.addPassenger(Objects.requireNonNull(Bukkit.getPlayer(uuid)));
-                    ejectEntityList.add(entity);
+                    ejectEntityList.add(entity.getUniqueId());
                 }
                 else{
                     location.add(-2*vector.getX(),0,-2*vector.getZ());
@@ -268,7 +271,7 @@ public class BattleRoyaleData{
                     entity.addPassenger(Objects.requireNonNull(Bukkit.getPlayer(uuid)));
                     location.add(location.getDirection().getX()/location.getDirection().length(),0,location.getDirection().getZ()/location.getDirection().length());
                     location.add(vector);
-                    ejectEntityList.add(entity);
+                    ejectEntityList.add(entity.getUniqueId());
                 }
                 count=count+1;
             }
@@ -298,23 +301,70 @@ public class BattleRoyaleData{
                 if(isNarrowingArea)return;
                 isNarrowingArea=true;
 
-                world.getWorldBorder().setSize(2*nextwidth,time);
+                setWBSize(2*nextwidth,time);
+                //world.getWorldBorder().setSize(2*nextwidth,time);
 
                 for(int i=0;i<time*20&&flag.get()&&currentwidth>1;i++){
                     if((time*20-i)%20==0){
                         setBossBar(time,time-(i/20),"エリア縮小終了");
                     }
-                    world.getWorldBorder().setCenter(currentCenter[0]+i*(nextCenter[0]-currentCenter[0])/time/20,currentCenter[1]+i*(nextCenter[1]-currentCenter[1])/time/20);
+                    if(i%20==0)setWBCenter(currentCenter[0]+i*(nextCenter[0]-currentCenter[0])/time/20,currentCenter[1]+i*(nextCenter[1]-currentCenter[1])/time/20);
+                    //world.getWorldBorder().setCenter(currentCenter[0]+i*(nextCenter[0]-currentCenter[0])/time/20,currentCenter[1]+i*(nextCenter[1]-currentCenter[1])/time/20);
                     threadSleep(50);
                     //world.getWorldBorder().setSize(2*currentwidth*(1+(((nextwidth/currentwidth)-1)*i/time/20)));
                 }
-                if(nextwidth==1)world.getWorldBorder().setCenter(currentCenter[0]+5000,currentCenter[1]+5000);
+                if(nextwidth==1)setWBCenter(currentCenter[0]+5000,currentCenter[1]+5000);//world.getWorldBorder().setCenter(currentCenter[0]+5000,currentCenter[1]+5000);
                 currentwidth=nextwidth;
                 currentCenter[0]=nextCenter[0];
                 currentCenter[1]=nextCenter[1];
                 isNarrowingArea=false;
             }
         }
+    }
+
+    private void setWBBuffer(double buffer) {
+        Bukkit.getScheduler().runTask(instance, new Runnable() {
+                    public void run() {
+                        world.getWorldBorder().setDamageBuffer(buffer);
+                    }
+                }
+        );
+    }
+
+   private void setWBDamage(double damage){
+        Bukkit.getScheduler().runTask(instance,new Runnable(){
+            @Override
+            public void run(){
+                world.getWorldBorder().setDamageAmount(damage);
+            }
+        });
+   }
+
+    private void setWBCenter(double X,double Z) {
+        Bukkit.getScheduler().runTask(instance,new Runnable(){
+            @Override
+            public void run(){
+                world.getWorldBorder().setCenter(X,Z);
+            }
+        });
+    }
+
+    private void setWBSize(double width,long time){//widthは一辺の長さ
+        Bukkit.getScheduler().runTask(instance,new Runnable(){
+            @Override
+            public void run(){
+                world.getWorldBorder().setSize(width,time);
+            }
+        });
+    }
+
+    private void setWBSize(double width){//widthは一辺の長さ
+        Bukkit.getScheduler().runTask(instance,new Runnable(){
+            @Override
+            public void run(){
+                world.getWorldBorder().setSize(width);
+            }
+        });
     }
 
     class RunBattleRoyale extends Thread{//バトロワ実行の主要スレッド
@@ -336,8 +386,10 @@ public class BattleRoyaleData{
             threadSleep(1000*fieldConfig.getInt("firstAreaWaitTime"));
             for(int i=1;i<reductionTimes+1&&flag.get();i++){
                 playGround.spawnableCarePackage=fieldConfig.getBoolean("areaReduction."+i+".spawnableCarePackage");
-                world.getWorldBorder().setDamageBuffer(fieldConfig.getDouble("areaReduction."+i+".areaDamageBuffer"));
-                world.getWorldBorder().setDamageAmount(fieldConfig.getDouble("areaReduction."+i+".areaDamage"));
+                setWBBuffer(fieldConfig.getDouble("areaReduction."+i+".areaDamageBuffer"));
+                setWBDamage(fieldConfig.getDouble("areaReduction."+i+".areaDamage"));
+                //world.getWorldBorder().setDamageBuffer(fieldConfig.getDouble("areaReduction."+i+".areaDamageBuffer"));
+                //world.getWorldBorder().setDamageAmount(fieldConfig.getDouble("areaReduction."+i+".areaDamage"));
                 playGround.newCenterPosition(fieldConfig.getDouble("areaReduction."+i+".reductionRate"));
                 bossBar.setColor(BarColor.GREEN);
                 for(int j=fieldConfig.getInt("areaReduction."+i+".waitTime");j>0&&flag.get();j--){
@@ -371,7 +423,8 @@ public class BattleRoyaleData{
         if(playerList.size()==deadPlayerList.size()+1){
             for(UUID uuid:playerList.keySet()){
                 if(!deadPlayerList.contains(uuid)){
-                    Bukkit.getServer().broadcastMessage("§l§6"+Bukkit.getPlayer(uuid).getName()+"がバトルロワイヤルを制しました！");
+                    broadcastMessage("§l§6"+Bukkit.getPlayer(uuid).getName()+"がバトルロワイヤルを制しました！");
+                    Bukkit.getPlayer(uuid).getInventory().clear();
                     break;
                 }
             }
@@ -381,19 +434,19 @@ public class BattleRoyaleData{
         playGround.removePlayersChest();
         playGround.removeCarePackage();
         playGround.removeLootChest();
-        playGround.removeEntities();
         isRunning=false;
+        playGround.removeEntities();
     }
 
-    public void preGameStart(){
+    public void preGameStart() {
         playGround.generateShip();
         setPlayerStatus();
         playGround.putLootChest();
-        for (Player p : Bukkit.getOnlinePlayers()){
-            if (!playerList.containsKey(p.getUniqueId()) && !p.isOp())p.setGameMode(GameMode.SPECTATOR);
-        }
-        Bukkit.getServer().broadcastMessage("§3バトルロワイヤルが始まりました！最後の一人を賭けて戦いましょう！");
-        Bukkit.getServer().broadcastMessage("§3参加人数"+LivingPlayers()+"人");
+//        for (Player p : Bukkit.getOnlinePlayers()) {
+//            if (!playerList.containsKey(p.getUniqueId()) && !p.isOp()) p.setGameMode(GameMode.SPECTATOR);
+//        }
+        broadcastMessage("§3バトルロワイヤルが始まりました！最後の一人を賭けて戦いましょう！");
+        broadcastMessage("§3参加人数" + LivingPlayers() + "人");
     }
 
     private void interruptThreads(){
@@ -412,15 +465,15 @@ public class BattleRoyaleData{
         return true;
     }
 
-    public void setPlayerStatus(){//メインからじゃないと一部いじくれないの不便すぎん？
+    public void setPlayerStatus(){
         for(UUID uuid:playerList.keySet()){
             if(Bukkit.getPlayer(uuid)==null)continue;
             Player p=Bukkit.getPlayer(uuid);
             p.setGameMode(GameMode.ADVENTURE);
+            p.setFoodLevel(20);
             bossBar.addPlayer(p);
-            p.getInventory().clear();
             p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
-            p.setHealth(fieldConfig.getInt("playerHealth"));
+            //p.setHealth(fieldConfig.getInt("playerHealth")); なしにしましょう
             for(PotionEffect potion:p.getActivePotionEffects()){
                 p.removePotionEffect(potion.getType());
             }
@@ -436,21 +489,31 @@ public class BattleRoyaleData{
     }
 
     public ItemStack createCustomItem (final Material material, final String name, final String... lore){//デバッグのためpublic
-            final ItemStack item = new ItemStack(material, 1);
-            final ItemMeta meta = item.getItemMeta();
+        final ItemStack item = new ItemStack(material, 1);
+        final ItemMeta meta = item.getItemMeta();
 
-            meta.setDisplayName(name);
+        meta.displayName(Component.text(name));
 
-            meta.setLore(Arrays.asList(lore));
+        meta.lore(listToComponent(lore));
 
-            item.setItemMeta(meta);
+        item.setItemMeta(meta);
 
-            return item;
-        }
+        return item;
+    }
 
 
     public void removeParticipant(Player p){
         playerList.remove(p.getUniqueId());
+    }
+
+    private List<Component> listToComponent(String... lore){
+        List<Component> components=new ArrayList<>();
+        for (String s : lore) components.add(Component.text(s));
+        return components;
+    }
+
+    private void broadcastMessage(String str){
+        world.sendMessage(Component.text(str));
     }
 
     BattleRoyaleData(String fieldName,String itemsName){
@@ -460,6 +523,7 @@ public class BattleRoyaleData{
         probability=fieldConfig.getDouble("generatingRate");
         reductionTimes=fieldConfig.getConfigurationSection("areaReduction").getKeys(false).size();
         bossBar.removeFlag(BarFlag.CREATE_FOG);
+        world=Bukkit.getWorld(fieldConfig.getString("world"));
         for(String string:fieldConfig.getConfigurationSection("randomTierWeight").getKeys(false)){
             sumRandomWeight=sumRandomWeight+fieldConfig.getInt("randomTierWeight."+string);
             maxTier=maxTier+1;

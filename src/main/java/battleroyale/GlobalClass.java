@@ -1,6 +1,4 @@
-package battleroyale;
-
-import org.bukkit.configuration.file.FileConfiguration;
+package ltotj.minecraft.battleroyale;
 
 public class GlobalClass {
     public static BattleRoyaleData runningGame;
