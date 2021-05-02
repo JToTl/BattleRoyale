@@ -127,6 +127,20 @@ public class Commands implements CommandExecutor {
                                 Location invisiblelocation = new Location(p.getWorld(), GlobalClass.editedConfig.getConfig().getDouble("chestPosition." + str + ".X"), GlobalClass.editedConfig.getConfig().getDouble("chestPosition." + str + ".Y"), GlobalClass.editedConfig.getConfig().getDouble("chestPosition." + str + ".Z"));
                                 invisiblelocation.getBlock().setType(Material.AIR);
                             }
+                            break;
+                        case "check":
+                            if (args.length < 3) {
+                                p.sendMessage("Tierを設定してください");
+                                return true;
+                            }
+                            int count=0;
+                            for (String str : GlobalClass.editedConfig.getConfig().getConfigurationSection("chestPosition").getKeys(false)) {
+                                if (!args[2].equals("all") && !args[2].equals("" + GlobalClass.editedConfig.getConfig().getInt("chestPosition." + str + ".Tier"))) {
+                                    continue;
+                                }
+                                count+=1;
+                            }
+                            p.sendMessage("Tier:" + args[2] + "のチェストは"+count+"個設定されています");
                     }
                     break;
                 case "editfield":

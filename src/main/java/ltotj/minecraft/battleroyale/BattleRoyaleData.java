@@ -25,6 +25,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.Vector;
 
 
@@ -46,6 +48,7 @@ public class BattleRoyaleData{
     Random random=new Random();//ランダム用
     int sumRandomWeight=0,maxTier=0,reductionTimes;
     BossBar bossBar=Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID, BarFlag.CREATE_FOG);
+    ScoreboardManager scoreboardManager=Bukkit.getScoreboardManager();
 
     class PlayerData {
         UUID uuid;
@@ -382,6 +385,11 @@ public class BattleRoyaleData{
         @Override
         public void run(){
             isRunning=true;
+            for(UUID uuid:playerList.keySet()){
+                Player player=Bukkit.getPlayer(uuid);
+                if(player==null)continue;
+                player.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
+            }
             playGround.setWorldBorder();
             threadSleep(1000*fieldConfig.getInt("firstAreaWaitTime"));
             for(int i=1;i<reductionTimes+1&&flag.get();i++){
@@ -472,7 +480,7 @@ public class BattleRoyaleData{
             p.setGameMode(GameMode.ADVENTURE);
             p.setFoodLevel(20);
             bossBar.addPlayer(p);
-            p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
+            //移動させたあとに実行p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
             //p.setHealth(fieldConfig.getInt("playerHealth")); なしにしましょう
             for(PotionEffect potion:p.getActivePotionEffects()){
                 p.removePotionEffect(potion.getType());

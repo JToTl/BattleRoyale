@@ -40,8 +40,9 @@ public class EventList implements Listener {
     }
 
     private boolean matchName(ItemStack item,String name){
-        if(item==null||item.getItemMeta().displayName()==null)return false;
+        if(item!=null&&item.getItemMeta()!=null&&item.getItemMeta().displayName()!=null)
         return item.getItemMeta().displayName().equals(Component.text(name));
+        return false;
     }
 
     private String getDisplayName(ItemStack itemStack) {//要書き換え
@@ -78,11 +79,12 @@ public class EventList implements Listener {
 
     @EventHandler
     public void InvClickEvent(InventoryClickEvent e){
-        if(e.getCurrentItem()!=null&&matchName(e.getCurrentItem(),"降下用エリトラ")){
-            e.setCancelled(true);
-        }
-        else if(GlobalClass.runningGame!=null&&!GlobalClass.runningGame.isRunning&&GlobalClass.runningGame.playerList.containsKey(e.getWhoClicked().getUniqueId())){
-            e.setCancelled(true);
+        if(e.getCurrentItem()!=null) {
+            if (matchName(e.getCurrentItem(), "降下用エリトラ")) {
+                e.setCancelled(true);
+            } else if (GlobalClass.runningGame != null && !GlobalClass.runningGame.isRunning && GlobalClass.runningGame.playerList.containsKey(e.getWhoClicked().getUniqueId())) {
+                e.setCancelled(true);
+            }
         }
     }
 
