@@ -202,7 +202,9 @@ public class Commands implements CommandExecutor {
                         p.sendMessage("ゲームが設定されていません");
                     } else if (!GlobalClass.runningGame.isRunning) {
                         GlobalClass.runningGame.preGameStart();
+                        GlobalClass.runningGame.scoreboard(((Player) sender).getWorld());
                         GlobalClass.runningGame.runBattleRoyale.start();
+                        GlobalClass.runningGame.scoreboard(((Player) sender).getWorld());
                         GlobalClass.runningGame.playGround.carePackageThread.runTaskTimer(instance, 300, 20 * GlobalClass.runningGame.fieldConfig.getInt("carePackage.frequency"));
                     } else {
                         p.sendMessage("既にゲームが行われています");

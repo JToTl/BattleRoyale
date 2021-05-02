@@ -25,6 +25,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.Vector;
@@ -48,7 +50,6 @@ public class BattleRoyaleData{
     Random random=new Random();//ランダム用
     int sumRandomWeight=0,maxTier=0,reductionTimes;
     BossBar bossBar=Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID, BarFlag.CREATE_FOG);
-    ScoreboardManager scoreboardManager=Bukkit.getScoreboardManager();
 
     class PlayerData {
         UUID uuid;
@@ -370,6 +371,35 @@ public class BattleRoyaleData{
         });
     }
 
+    void scoreboard(World world){
+        ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+        Bukkit.getScheduler().runTaskTimer(instance, Runnable->{
+            if (!isRunning)return;
+            for (UUID uuid : playerList.keySet()){
+                Player p = Bukkit.getPlayer(uuid);
+                Location location=new Location(GlobalClass.runningGame.world,GlobalClass.runningGame.playGround.nextCenter[0],100,GlobalClass.runningGame.playGround.nextCenter[1]),
+                        plocation=p.getLocation();
+                p.setCompassTarget(location);
+                double d,l=Math.round(10.0*Math.sqrt(Math.pow(plocation.getX()-location.getX(),2)+Math.pow(plocation.getZ()-location.getZ(),2)))*0.1;
+                d = Math.max(Math.abs(plocation.getX() - location.getX()), Math.abs(plocation.getZ() - location.getZ()));
+
+                String string;
+                if(d<=GlobalClass.runningGame.playGround.nextwidth)string="§dエリア内に滞在中";
+                else string="§aエリア内まであと§b"+Math.round(10*l*(d-GlobalClass.runningGame.playGround.nextwidth)/d)/10+"M";
+
+                Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
+                Objective objective = scoreboard.registerNewObjective("§d§lBattleRoyale","Dummy",Component.text("Battle"));
+                objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+                objective.getScore("§6§l残り人数 : " + playerList.size() + "人").setScore(0);
+                objective.getScore("§a§l中心座標まであと§b§l"+l+"M").setScore(-1);
+                objective.getScore(string).setScore(-2);
+                objective.getScore("§b§lマップ : " + world.getName()).setScore(-3);
+                p.setScoreboard(scoreboard);
+            }
+
+        },0,20);
+    }
+
     class RunBattleRoyale extends Thread{//バトロワ実行の主要スレッド
 
         AtomicBoolean flag=new AtomicBoolean(true);
@@ -385,11 +415,6 @@ public class BattleRoyaleData{
         @Override
         public void run(){
             isRunning=true;
-            for(UUID uuid:playerList.keySet()){
-                Player player=Bukkit.getPlayer(uuid);
-                if(player==null)continue;
-                player.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
-            }
             playGround.setWorldBorder();
             threadSleep(1000*fieldConfig.getInt("firstAreaWaitTime"));
             for(int i=1;i<reductionTimes+1&&flag.get();i++){
@@ -480,7 +505,7 @@ public class BattleRoyaleData{
             p.setGameMode(GameMode.ADVENTURE);
             p.setFoodLevel(20);
             bossBar.addPlayer(p);
-            //移動させたあとに実行p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
+            p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
             //p.setHealth(fieldConfig.getInt("playerHealth")); なしにしましょう
             for(PotionEffect potion:p.getActivePotionEffects()){
                 p.removePotionEffect(potion.getType());
