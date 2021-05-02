@@ -391,7 +391,7 @@ public class BattleRoyaleData{
                 Objective objective = scoreboard.registerNewObjective("§d§lBattleRoyale","Dummy",Component.text("Battle"));
                 objective.setDisplaySlot(DisplaySlot.SIDEBAR);
                 objective.getScore("§6§l残り人数 : " + playerList.size() + "人").setScore(0);
-                objective.getScore("§a§l中心座標まであと§b§l"+l+"M").setScore(-1);
+                objective.getScore("§a§l中心座標まであと§b§l"+Math.round(l)+"M").setScore(-1);
                 objective.getScore(string).setScore(-2);
                 objective.getScore("§b§lマップ : " + world.getName()).setScore(-3);
                 p.setScoreboard(scoreboard);
@@ -415,6 +415,11 @@ public class BattleRoyaleData{
         @Override
         public void run(){
             isRunning=true;
+            for(UUID uuid:playerList.keySet()){
+                Player player=Bukkit.getPlayer(uuid);
+                if(player==null)continue;
+                player.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
+            }
             playGround.setWorldBorder();
             threadSleep(1000*fieldConfig.getInt("firstAreaWaitTime"));
             for(int i=1;i<reductionTimes+1&&flag.get();i++){
@@ -505,7 +510,7 @@ public class BattleRoyaleData{
             p.setGameMode(GameMode.ADVENTURE);
             p.setFoodLevel(20);
             bossBar.addPlayer(p);
-            p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
+            //移動させたあとに実行p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
             //p.setHealth(fieldConfig.getInt("playerHealth")); なしにしましょう
             for(PotionEffect potion:p.getActivePotionEffects()){
                 p.removePotionEffect(potion.getType());

@@ -173,7 +173,7 @@ public class EventList implements Listener {
 
         ItemStack item=p.getInventory().getItemInMainHand();
         ItemMeta meta=item.getItemMeta();
-        meta.displayName(Component.text("§a中心座標まであと§b"+l+"M "+string));
+        meta.displayName(Component.text("§a中心座標まであと§b"+Math.round(l)+"M "+string));
         item.setItemMeta(meta);
         p.getInventory().setItemInMainHand(item);
     }
