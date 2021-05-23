@@ -42,18 +42,21 @@ public class BattleRoyaleData{
     FileConfiguration fieldConfig;//フィールドの設定書いたconfig
     PlayGround playGround;//フィールドの処理が色々書いてあるクラス
     RunBattleRoyale runBattleRoyale=new RunBattleRoyale();//バトロワ実行スレッド
-    boolean isRunning=false,isEnd;
+    boolean isRunning=false,isEnd=false;
     double probability;//チェストの生成率
     private final Plugin instance =Main.getPlugin(Main.class);//こんふぃぐよう
     World world;//バトロワが行われるワールド
     String itemfilename,mode="";//使うルートテーブルとモードの指定
     Random random=new Random();//ランダム用
-    int sumRandomWeight=0,maxTier=0,reductionTimes;
+    int sumRandomWeight=0,maxTier=0,maxGuns=2,reductionTimes;
     BossBar bossBar=Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID, BarFlag.CREATE_FOG);
+    UUID winner;
 
     class PlayerData {
         UUID uuid;
-        int killCount = 0;
+        String name;
+        int killCount = 0,guns=0;
+        boolean clickGun=false;
         Location[] deadLocations = new Location[2];
         Material[] deadLocationMaterials=new Material[2];
         BlockData[] deadLocationBlockData=new BlockData[2];
@@ -87,6 +90,7 @@ public class BattleRoyaleData{
 
         PlayerData(Player player){
             uuid=player.getUniqueId();
+            name=player.getName();
             inv= Bukkit.createInventory(null, 45, Component.text(player.getName() + "のインベントリ"));
         }
     }
@@ -170,7 +174,7 @@ public class BattleRoyaleData{
             setWBCenter(currentCenter[0],currentCenter[1]);
             setWBSize(2*currentwidth);
             setWBBuffer(10);
-            setWBDamage(1);
+            setWBDamage(0.01);
         }
 
         private void newCenterPosition(double p){//今の中心座標から、新しい中心座標をランダム生成
@@ -390,7 +394,7 @@ public class BattleRoyaleData{
                 Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
                 Objective objective = scoreboard.registerNewObjective("§d§lBattleRoyale","Dummy",Component.text("Battle"));
                 objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-                objective.getScore("§6§l残り人数 : " + playerList.size() + "人").setScore(0);
+                objective.getScore("§6§l残り人数 : " + (playerList.size()-deadPlayerList.size()) + "人").setScore(0);
                 objective.getScore("§a§l中心座標まであと§b§l"+Math.round(l)+"M").setScore(-1);
                 objective.getScore(string).setScore(-2);
                 objective.getScore("§b§lマップ : " + world.getName()).setScore(-3);
@@ -462,6 +466,7 @@ public class BattleRoyaleData{
             for(UUID uuid:playerList.keySet()){
                 if(!deadPlayerList.contains(uuid)){
                     broadcastMessage("§l§6"+Bukkit.getPlayer(uuid).getName()+"がバトルロワイヤルを制しました！");
+                    winner=uuid;
                     Bukkit.getPlayer(uuid).getInventory().clear();
                     break;
                 }
@@ -473,6 +478,7 @@ public class BattleRoyaleData{
         playGround.removeCarePackage();
         playGround.removeLootChest();
         isRunning=false;
+        isEnd=true;
         playGround.removeEntities();
     }
 
@@ -552,6 +558,15 @@ public class BattleRoyaleData{
 
     private void broadcastMessage(String str){
         world.sendMessage(Component.text(str));
+    }
+
+    public void broadcastRanking(){
+        if(winner==null||!isEnd)return;
+        broadcastMessage("§c一位：§f"+playerList.get(winner).name);
+        if(deadPlayerList.size()<1)return;
+        broadcastMessage("§d二位：§f"+playerList.get(deadPlayerList.get(deadPlayerList.size()-1)).name);
+        if (deadPlayerList.size()<2)return;
+        broadcastMessage("§e三位：§f"+playerList.get(deadPlayerList.get(deadPlayerList.size()-2)).name);
     }
 
     BattleRoyaleData(String fieldName,String itemsName){

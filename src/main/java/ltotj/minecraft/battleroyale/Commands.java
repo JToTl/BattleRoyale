@@ -27,6 +27,10 @@ public class Commands implements CommandExecutor {
         item.setItemMeta(meta);
     }
 
+    private void broadcastMessage(String message){
+        Bukkit.getServer().broadcast(Component.text(message),Server.BROADCAST_CHANNEL_USERS);
+    }
+
     private void checkYml(String str,Player p){
         p.sendMessage("ファイルの構成をチェック中・・・");
         CustomConfig config=new CustomConfig(instance,str);
@@ -197,6 +201,12 @@ public class Commands implements CommandExecutor {
                         checkYml(args[1],p);
                     }
                     break;
+                case "guns":
+                    if(args.length<3&&GlobalClass.runningGame!=null&&args[1].matches("-?\\\\d+")){
+                        GlobalClass.runningGame.maxGuns=Integer.parseInt(args[1]);
+                        sender.sendMessage("銃の最大所持数を"+args[1]+"に設定しました");
+                    }
+                    break;
                 case "start":
                     if (GlobalClass.runningGame == null) {
                         p.sendMessage("ゲームが設定されていません");
@@ -210,6 +220,33 @@ public class Commands implements CommandExecutor {
                         p.sendMessage("既にゲームが行われています");
                     }
                     break;
+                case "show":
+                    if(GlobalClass.runningGame==null){
+                        p.sendMessage("ゲームが設定されていません");
+                    }
+                    else if(args.length<2){
+                        p.sendMessage("足りないよ！");
+                    }
+                    else {
+                        switch (args[1]) {
+                            case "player":
+                                p.sendMessage("参加登録者は以下の通りです");
+                                for (BattleRoyaleData.PlayerData playerData : GlobalClass.runningGame.playerList.values()) {
+                                    p.sendMessage(playerData.name);
+                                }
+                                break;
+                            case "ranking":
+                                if (GlobalClass.runningGame.isRunning) {
+                                    p.sendMessage("ゲームが終了していません");
+                                    break;
+                                }
+                                GlobalClass.runningGame.broadcastRanking();
+                                break;
+                            case "killranking":
+                                break;
+                        }
+                    }
+                    break;
                 case "stop":
                     if (GlobalClass.runningGame == null || !GlobalClass.runningGame.isRunning) {
                         p.sendMessage("バトルロワイヤルはただいま開催されていません");
@@ -218,6 +255,20 @@ public class Commands implements CommandExecutor {
                     GlobalClass.runningGame.endGame();
                     GlobalClass.runningGame = null;
                     p.sendMessage("バトルロワイヤルを中断しました");
+                    break;
+                case "joinalpl":
+                    if(GlobalClass.runningGame==null||GlobalClass.runningGame.isRunning||GlobalClass.runningGame.isEnd){
+                        p.sendMessage("ゲームが存在しないか、既に開始されています");
+                    }
+                    else{
+                     for(Player player:GlobalClass.runningGame.world.getPlayers()){
+                         Location location=player.getLocation();
+                         if(location.clone().add(0,-1,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)||location.clone().add(0,-2,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)){
+                             player.getInventory().clear();
+                             GlobalClass.runningGame.putParticipant(player);
+                         }
+                        }
+                    }
                     break;
                 case "test":
                     Entity entity=p.getWorld().spawnEntity(p.getLocation().add(0,20,0), EntityType.WITHER_SKULL);

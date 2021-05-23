@@ -3,11 +3,9 @@ package ltotj.minecraft.battleroyale;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.entity.ProjectileCollideEvent;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,11 +14,11 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -29,9 +27,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class EventList implements Listener {
 
@@ -65,8 +61,12 @@ public class EventList implements Listener {
     }
 
     @EventHandler
-    public void CancelDamageByElytra(final EntityDamageEvent e){
-        if(e.getCause().equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL))e.setCancelled(true);
+    public void CancelDamageByElytra(final EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player&&GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning) {
+            Player player=(Player)e.getEntity();
+            if (e.getCause().equals(EntityDamageEvent.DamageCause.FLY_INTO_WALL) && GlobalClass.runningGame.playerList.containsKey(player.getUniqueId()))
+                e.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -77,13 +77,78 @@ public class EventList implements Listener {
         }
     }
 
+    @EventHandler//あるやんけ
+    public void PlayerMoveWorldEvent(PlayerChangedWorldEvent e){
+
+    }
+
+    //////////////////////////////
+    ///銃の所持数制限のための臨時措置
+    @EventHandler
+    public void DropItemEvent(PlayerDropItemEvent e){
+        if(e.getItemDrop().getItemStack().getType().equals(Material.IRON_HOE)&&GlobalClass.runningGame!=null&&GlobalClass.runningGame.playerList.containsKey(e.getPlayer().getUniqueId())&&!(e.isCancelled())){
+            GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).guns-=1;
+        }
+    }
+
+    @EventHandler
+    public void PickUpItemEvent(EntityPickupItemEvent e){
+        if(!(e.getEntity() instanceof Player))return;
+        Player player=(Player)e.getEntity();
+        if(e.getItem().getItemStack().getType().equals(Material.IRON_HOE)&&GlobalClass.runningGame!=null&&GlobalClass.runningGame.playerList.containsKey(player.getUniqueId())){
+            if(GlobalClass.runningGame.playerList.get(player.getUniqueId()).guns>GlobalClass.runningGame.maxGuns-1){
+                e.setCancelled(true);
+            }
+            else{
+                GlobalClass.runningGame.playerList.get(player.getUniqueId()).guns+=1;
+            }
+        }
+    }
+
+    @EventHandler
+    public void InvCloseEvent(InventoryCloseEvent e){
+        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.playerList.containsKey(e.getPlayer().getUniqueId())&&!(e.getInventory().getType().equals(InventoryType.PLAYER))&&
+        GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).clickGun) {
+            ItemStack[] items = e.getPlayer().getInventory().getContents();
+            List<ItemStack> guns=new ArrayList<>();
+            int count=0;
+            for(ItemStack item:items){
+                if(item!=null&&item.getType().equals(Material.IRON_HOE)){
+                    guns.add(item);
+                    count+=1;
+                }
+            }
+            if(count<GlobalClass.runningGame.maxGuns+1){
+                GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).clickGun=false;
+                GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).guns=count;
+            }
+            else {
+
+                Location location=e.getPlayer().getLocation();
+                if(e.getPlayer().getInventory().getItemInOffHand().getType().equals(Material.IRON_HOE))e.getPlayer().getInventory().setItemInOffHand(new ItemStack(Material.STONE,0));
+                e.getPlayer().getInventory().remove(Material.IRON_HOE);
+                for(ItemStack item:guns)location.getWorld().dropItem(location, item);
+                e.getPlayer().sendMessage(GlobalClass.runningGame.maxGuns+"個以上の銃は持てません");
+                GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).guns=0;
+            }
+        }
+    }
+    ////////////////////////////////
+
     @EventHandler
     public void InvClickEvent(InventoryClickEvent e){
-        if(e.getCurrentItem()!=null) {
-            if (matchName(e.getCurrentItem(), "降下用エリトラ")) {
+        if(!(e.getWhoClicked() instanceof Player))return;
+        Player player=(Player)e.getWhoClicked();
+        ItemStack clickedItem=e.getCurrentItem();
+        if(clickedItem!=null) {
+            if (matchName(clickedItem, "降下用エリトラ")) {
                 e.setCancelled(true);
-            } else if (GlobalClass.runningGame != null && !GlobalClass.runningGame.isRunning && GlobalClass.runningGame.playerList.containsKey(e.getWhoClicked().getUniqueId())) {
+            } else if (GlobalClass.runningGame != null && !GlobalClass.runningGame.isRunning && GlobalClass.runningGame.playerList.containsKey(player.getUniqueId())) {
                 e.setCancelled(true);
+            }
+            //臨時
+            else if(clickedItem.getType().equals(Material.IRON_HOE)&&GlobalClass.runningGame!=null&&GlobalClass.runningGame.playerList.containsKey(player.getUniqueId())){
+                GlobalClass.runningGame.playerList.get(player.getUniqueId()).clickGun=true;
             }
         }
     }
@@ -99,6 +164,7 @@ public class EventList implements Listener {
                 e.getPlayer().getInventory().clear();
                 GlobalClass.runningGame.deadPlayerList.add(e.getPlayer().getUniqueId());
                 e.getPlayer().setGameMode(GameMode.SPECTATOR);
+                e.getPlayer().getServer().broadcast(e.getPlayer().getName()+"はログアウトしたため死亡扱いとなります", Server.BROADCAST_CHANNEL_USERS);
                 if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
                     GlobalClass.runningGame.endGame();
                 }
@@ -199,7 +265,7 @@ public class EventList implements Listener {
 
     @EventHandler
     public void ProtectDropShip(ProjectileCollideEvent e){
-        if(e.getEntity().getCustomName().equals("dropship")){
+        if(e.getEntity().getCustomName()!=null&&e.getEntity().getCustomName().equals("dropship")){
             e.setCancelled(true);
         }
     }
