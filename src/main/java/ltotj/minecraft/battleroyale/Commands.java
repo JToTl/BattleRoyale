@@ -185,6 +185,17 @@ public class Commands implements CommandExecutor {
                     GlobalClass.runningGame = null;
                     Bukkit.getServer().broadcast(Component.text("ゲームが削除されました"),Server.BROADCAST_CHANNEL_USERS);
                     break;
+                case "generate":
+                    if(GlobalClass.runningGame==null){
+                        p.sendMessage("ゲームが存在しません");
+                    }
+                    else if(GlobalClass.runningGame.isGenerated){
+                        p.sendMessage("既に生成されています");
+                    }
+                    else{
+                        GlobalClass.runningGame.playGround.putLootChest();
+                    }
+                    break;
                 case "setgame":
                     if (args.length < 2) {
                         p.sendMessage("/ setgame ステージ アイテムリスト で新規ゲームを開設");

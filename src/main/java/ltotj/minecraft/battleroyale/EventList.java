@@ -164,7 +164,7 @@ public class EventList implements Listener {
                 e.getPlayer().getInventory().clear();
                 GlobalClass.runningGame.deadPlayerList.add(e.getPlayer().getUniqueId());
                 e.getPlayer().setGameMode(GameMode.SPECTATOR);
-                e.getPlayer().getServer().broadcast(e.getPlayer().getName()+"はログアウトしたため死亡扱いとなります", Server.BROADCAST_CHANNEL_USERS);
+                e.getPlayer().getServer().broadcast(e.getPlayer().getName() + "はログアウトしたため死亡扱いとなります", Server.BROADCAST_CHANNEL_USERS);
                 if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
                     GlobalClass.runningGame.endGame();
                 }
@@ -287,6 +287,7 @@ public class EventList implements Listener {
                         player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1, 200));
                         player.getInventory().clear();
                         player.getInventory().addItem(new ItemStack(Material.COMPASS,1));
+                        player.getInventory().addItem(new ItemStack(Material.STONE_SWORD,1));
                     }
                 }
             }

@@ -42,7 +42,7 @@ public class BattleRoyaleData{
     FileConfiguration fieldConfig;//フィールドの設定書いたconfig
     PlayGround playGround;//フィールドの処理が色々書いてあるクラス
     RunBattleRoyale runBattleRoyale=new RunBattleRoyale();//バトロワ実行スレッド
-    boolean isRunning=false,isEnd=false;
+    boolean isRunning=false,isEnd=false,isGenerated=false;
     double probability;//チェストの生成率
     private final Plugin instance =Main.getPlugin(Main.class);//こんふぃぐよう
     World world;//バトロワが行われるワールド
@@ -192,6 +192,8 @@ public class BattleRoyaleData{
         }
 
         public void putLootChest() {//生成率に応じて個別にチェストが生成されるかどうかの判定を行う
+            if(isGenerated)return;
+            isGenerated=true;
             Set<String> chestPosition = fieldConfig.getConfigurationSection("chestPosition").getKeys(false);
             for (String c : chestPosition) {
                 if (random.nextDouble() < probability) {
