@@ -293,4 +293,25 @@ public class EventList implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void runchange(PlayerToggleSprintEvent e){
+        if (GlobalClass.runningGame!=null && GlobalClass.runningGame.isRunning){
+            if (e.getPlayer().isSneaking() && e.isSprinting()){
+                e.getPlayer().setSneaking(false);
+            }
+            if (!e.getPlayer().isSneaking() && !e.isSprinting()){
+                e.getPlayer().setSneaking(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void sneak(PlayerToggleSneakEvent e){
+        if (GlobalClass.runningGame!=null && GlobalClass.runningGame.isRunning){
+            e.setCancelled(true);
+        }
+    }
+
+    
 }
