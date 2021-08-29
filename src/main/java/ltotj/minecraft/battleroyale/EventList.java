@@ -279,12 +279,13 @@ public class EventList implements Listener {
                 if(killer!=null) {
                     GlobalClass.runningGame.spectatorList.put(e.getEntity().getUniqueId(), killer.getUniqueId());
                     GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(e.getEntity().getUniqueId());
-                    for (UUID uuid : GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).watchedList) {
-                        GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(uuid);
-                        GlobalClass.runningGame.spectatorList.put(uuid, killer.getUniqueId());
+                    for (UUID uuid : GlobalClass.runningGame.spectatorList.values()) {
                         Player player = Bukkit.getPlayer(uuid);
+                        GlobalClass.runningGame.spectatorList.put(e.getEntity().getUniqueId(), uuid);
                         if (player != null && player.getGameMode() == GameMode.SPECTATOR) {
+                            GlobalClass.runningGame.playerList.get(player.getUniqueId()).watchedList.add(uuid);
                             player.setSpectatorTarget(killer);
+                            break;
                         }
                     }
                 }
@@ -305,7 +306,7 @@ public class EventList implements Listener {
     @EventHandler
     public void PlayerRespawn(PlayerRespawnEvent e){
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
-            Component component=Component.text("/bat kansen ,または[§e§lここをクリック]で観戦しましょう！").clickEvent(ClickEvent.runCommand("/battleroyale kansen"));
+            Component component=Component.text("/bat kansen ,または§e§l[ここをクリック]§rで観戦しましょう！").clickEvent(ClickEvent.runCommand("/battleroyale kansen"));
             e.getPlayer().sendMessage(component);
         }
     }
