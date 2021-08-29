@@ -302,9 +302,9 @@ public class EventList implements Listener {
     @EventHandler
     public void PlayerRespawn(PlayerRespawnEvent e){
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
-            if (e.getPlayer().getGameMode() == GameMode.SPECTATOR) {
+            e.getPlayer().setGameMode(GameMode.SPECTATOR);
                 e.getPlayer().setSpectatorTarget(Bukkit.getEntity(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId())));
-            }
+
         }
     }
 
