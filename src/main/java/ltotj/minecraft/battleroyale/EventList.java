@@ -4,6 +4,8 @@ import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.entity.ProjectileCollideEvent;
 import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.*;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
@@ -300,16 +302,13 @@ public class EventList implements Listener {
         }
     }
 
-//    @EventHandler
-//    public void PlayerRespawn(PlayerRespawnEvent e){
-//        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
-//            e.getPlayer().setGameMode(GameMode.SPECTATOR);
-//            Player player=Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId()));
-//            if(player!=null) {
-//                e.getPlayer().setSpectatorTarget(player);
-//            }
-//        }
-//    }
+    @EventHandler
+    public void PlayerRespawn(PlayerRespawnEvent e){
+        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
+            Component component=Component.text("/bat kansen ,または[§e§lここをクリック]で観戦しましょう！").clickEvent(ClickEvent.runCommand("/battleroyale kansen"));
+            e.getPlayer().sendMessage(component);
+        }
+    }
 
     @EventHandler
     public void DeleteElytra(final EntityToggleGlideEvent e){

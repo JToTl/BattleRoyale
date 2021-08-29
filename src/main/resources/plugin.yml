@@ -6,6 +6,7 @@ depend: [NBTAPI]
 commands:
   battleroyale:
     usage: "/battleroyale help"
+    aliases: [bat, btr, battle]
 
 permissions:
   op:
