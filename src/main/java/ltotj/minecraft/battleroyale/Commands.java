@@ -1,10 +1,7 @@
 package ltotj.minecraft.battleroyale;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Server;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -280,6 +277,9 @@ public class Commands implements CommandExecutor {
                         }
                     }
                     break;
+                case "spec":
+                    Bukkit.getPlayer(args[1]).setSpectatorTarget(Bukkit.getPlayer(args[2]));
+                    break;
                 case "test":
                     Entity entity=p.getWorld().spawnEntity(p.getLocation().add(0,20,0), EntityType.WITHER_SKULL);
                     entity.setCustomName("carepackage");
@@ -311,6 +311,17 @@ public class Commands implements CommandExecutor {
             case "survivor":
                 if(GlobalClass.runningGame!=null) p.sendMessage("残り人数"+GlobalClass.runningGame.LivingPlayers()+"人");
                 break;
+            case "kansen":
+                if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&& GlobalClass.runningGame.spectatorList.containsKey(((Player) sender).getUniqueId())){
+                    Player player=Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(((Player) sender).getUniqueId()));
+                    if(player!=null){
+                        ((Player)sender).setGameMode(GameMode.SPECTATOR);
+                        ((Player)sender).setSpectatorTarget(player);
+                    }
+                    else{
+                        sender.sendMessage("えらー");
+                    }
+                }
         }
         return true;
     }

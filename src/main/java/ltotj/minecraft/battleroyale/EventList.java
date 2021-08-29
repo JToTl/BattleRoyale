@@ -251,7 +251,6 @@ public class EventList implements Listener {
             GlobalClass.runningGame.deadPlayerList.add(e.getEntity().getPlayer().getUniqueId());
             GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).generatePlayersChest(e.getEntity().getPlayer());
             e.getEntity().getInventory().clear();
-            e.getEntity().getPlayer().setGameMode(GameMode.SPECTATOR);
             if (e.getEntity().getKiller() != null) {
                 Player killer = e.getEntity().getKiller();
                 if (GlobalClass.runningGame.playerList.containsKey(killer.getUniqueId())) {
@@ -270,19 +269,21 @@ public class EventList implements Listener {
             } else {
                 Player killer = null;
                 for (UUID uuid : GlobalClass.runningGame.spectatorList.keySet()) {
-                    if (uuid != e.getEntity().getUniqueId() && !GlobalClass.runningGame.deadPlayerList.contains(uuid)) {
+                    if (uuid != e.getEntity().getUniqueId() && !GlobalClass.runningGame.deadPlayerList.contains(uuid)&&Bukkit.getPlayer(uuid)!=null) {
                         killer = Bukkit.getPlayer(uuid);
                         break;
                     }
                 }
-                GlobalClass.runningGame.spectatorList.put(e.getEntity().getUniqueId(), killer.getUniqueId());
-                GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(e.getEntity().getUniqueId());
-                for (UUID uuid : GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).watchedList) {
-                    GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(uuid);
-                    GlobalClass.runningGame.spectatorList.put(uuid, killer.getUniqueId());
-                    Player player = Bukkit.getPlayer(uuid);
-                    if (player != null && player.getGameMode() == GameMode.SPECTATOR) {
-                        player.setSpectatorTarget(killer);
+                if(killer!=null) {
+                    GlobalClass.runningGame.spectatorList.put(e.getEntity().getUniqueId(), killer.getUniqueId());
+                    GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(e.getEntity().getUniqueId());
+                    for (UUID uuid : GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).watchedList) {
+                        GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(uuid);
+                        GlobalClass.runningGame.spectatorList.put(uuid, killer.getUniqueId());
+                        Player player = Bukkit.getPlayer(uuid);
+                        if (player != null && player.getGameMode() == GameMode.SPECTATOR) {
+                            player.setSpectatorTarget(killer);
+                        }
                     }
                 }
             }
@@ -299,14 +300,16 @@ public class EventList implements Listener {
         }
     }
 
-    @EventHandler
-    public void PlayerRespawn(PlayerRespawnEvent e){
-        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
-            e.getPlayer().setGameMode(GameMode.SPECTATOR);
-                e.getPlayer().setSpectatorTarget(Bukkit.getEntity(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId())));
-
-        }
-    }
+//    @EventHandler
+//    public void PlayerRespawn(PlayerRespawnEvent e){
+//        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
+//            e.getPlayer().setGameMode(GameMode.SPECTATOR);
+//            Player player=Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId()));
+//            if(player!=null) {
+//                e.getPlayer().setSpectatorTarget(player);
+//            }
+//        }
+//    }
 
     @EventHandler
     public void DeleteElytra(final EntityToggleGlideEvent e){
