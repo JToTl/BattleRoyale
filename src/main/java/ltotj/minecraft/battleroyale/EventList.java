@@ -270,7 +270,7 @@ public class EventList implements Listener {
                 }
             } else {
                 Player killer = null;
-                for (UUID uuid : GlobalClass.runningGame.spectatorList.keySet()) {
+                for (UUID uuid : GlobalClass.runningGame.playerList.keySet()) {
                     if (uuid != e.getEntity().getUniqueId() && !GlobalClass.runningGame.deadPlayerList.contains(uuid)&&Bukkit.getPlayer(uuid)!=null) {
                         killer = Bukkit.getPlayer(uuid);
                         break;
@@ -282,9 +282,11 @@ public class EventList implements Listener {
                     for (UUID uuid : GlobalClass.runningGame.spectatorList.values()) {
                         Player player = Bukkit.getPlayer(uuid);
                         GlobalClass.runningGame.spectatorList.put(e.getEntity().getUniqueId(), uuid);
-                        if (player != null && player.getGameMode() == GameMode.SPECTATOR) {
+                        if(player!=null) {
                             GlobalClass.runningGame.playerList.get(player.getUniqueId()).watchedList.add(uuid);
-                            player.setSpectatorTarget(killer);
+                            if (player.getGameMode() == GameMode.SPECTATOR) {
+                                player.setSpectatorTarget(killer);
+                            }
                             break;
                         }
                     }
