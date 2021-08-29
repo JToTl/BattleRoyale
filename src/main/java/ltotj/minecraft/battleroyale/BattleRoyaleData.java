@@ -51,6 +51,7 @@ public class BattleRoyaleData{
     int sumRandomWeight=0,maxTier=0,maxGuns=2,reductionTimes;
     BossBar bossBar=Bukkit.createBossBar("", BarColor.GREEN, BarStyle.SOLID, BarFlag.CREATE_FOG);
     UUID winner;
+    HashMap<UUID,UUID> spectatorList=new HashMap<>();
 
     class PlayerData {
         UUID uuid;
@@ -61,6 +62,7 @@ public class BattleRoyaleData{
         Material[] deadLocationMaterials=new Material[2];
         BlockData[] deadLocationBlockData=new BlockData[2];
         Inventory inv;
+        List<UUID> watchedList=new ArrayList<>();
 
         public void generatePlayersChest(Player player){
             deadLocations[0]=player.getLocation();

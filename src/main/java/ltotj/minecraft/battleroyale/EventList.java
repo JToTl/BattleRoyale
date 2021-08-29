@@ -2,6 +2,7 @@ package ltotj.minecraft.battleroyale;
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import com.destroystokyo.paper.event.entity.ProjectileCollideEvent;
+import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.block.Chest;
@@ -245,8 +246,8 @@ public class EventList implements Listener {
     }
 
     @EventHandler//プレイヤーが死んだら生存人数のやつとかなんとかをいじって、終了ならスレッド止めてなんやかんやしましょう
-    public void PlayerKilledEvent(PlayerDeathEvent e){
-        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&&GlobalClass.runningGame.playerList.containsKey(e.getEntity().getPlayer().getUniqueId())) {
+    public void PlayerKilledEvent(PlayerDeathEvent e) {
+        if (GlobalClass.runningGame != null && GlobalClass.runningGame.isRunning && GlobalClass.runningGame.playerList.containsKey(e.getEntity().getPlayer().getUniqueId())) {
             GlobalClass.runningGame.deadPlayerList.add(e.getEntity().getPlayer().getUniqueId());
             GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).generatePlayersChest(e.getEntity().getPlayer());
             e.getEntity().getInventory().clear();
@@ -255,6 +256,34 @@ public class EventList implements Listener {
                 Player killer = e.getEntity().getKiller();
                 if (GlobalClass.runningGame.playerList.containsKey(killer.getUniqueId())) {
                     GlobalClass.runningGame.playerList.get(killer.getUniqueId()).killCount = GlobalClass.runningGame.playerList.get(killer.getUniqueId()).killCount + 1;
+                    GlobalClass.runningGame.spectatorList.put(e.getEntity().getUniqueId(), killer.getUniqueId());
+                    GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(e.getEntity().getUniqueId());
+                    for (UUID uuid : GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).watchedList) {
+                        GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(uuid);
+                        GlobalClass.runningGame.spectatorList.put(uuid, killer.getUniqueId());
+                        Player player = Bukkit.getPlayer(uuid);
+                        if (player != null && player.getGameMode() == GameMode.SPECTATOR) {
+                            player.setSpectatorTarget(killer);
+                        }
+                    }
+                }
+            } else {
+                Player killer = null;
+                for (UUID uuid : GlobalClass.runningGame.spectatorList.keySet()) {
+                    if (uuid != e.getEntity().getUniqueId() && !GlobalClass.runningGame.deadPlayerList.contains(uuid)) {
+                        killer = Bukkit.getPlayer(uuid);
+                        break;
+                    }
+                }
+                GlobalClass.runningGame.spectatorList.put(e.getEntity().getUniqueId(), killer.getUniqueId());
+                GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(e.getEntity().getUniqueId());
+                for (UUID uuid : GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).watchedList) {
+                    GlobalClass.runningGame.playerList.get(killer.getUniqueId()).watchedList.add(uuid);
+                    GlobalClass.runningGame.spectatorList.put(uuid, killer.getUniqueId());
+                    Player player = Bukkit.getPlayer(uuid);
+                    if (player != null && player.getGameMode() == GameMode.SPECTATOR) {
+                        player.setSpectatorTarget(killer);
+                    }
                 }
             }
             if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
@@ -273,7 +302,9 @@ public class EventList implements Listener {
     @EventHandler
     public void PlayerRespawn(PlayerRespawnEvent e){
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
-            e.getPlayer().teleport(GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).deadLocations[0]);
+            if (e.getPlayer().getGameMode() == GameMode.SPECTATOR) {
+                e.getPlayer().setSpectatorTarget(Bukkit.getEntity(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId())));
+            }
         }
     }
 
@@ -319,6 +350,13 @@ public class EventList implements Listener {
             if (e.getAction() == Action.PHYSICAL && e.getClickedBlock().getType().equals(Material.FARMLAND)){
                 e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void spectatingEvent(PlayerStopSpectatingEntityEvent e){
+        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
+            e.setCancelled(true);
         }
     }
 
