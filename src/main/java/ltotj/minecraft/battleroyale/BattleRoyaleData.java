@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -524,6 +525,9 @@ public class BattleRoyaleData{
             //p.setHealth(fieldConfig.getInt("playerHealth")); なしにしましょう
             for(PotionEffect potion:p.getActivePotionEffects()){
                 p.removePotionEffect(potion.getType());
+                p.getInventory().clear();
+                p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
             }
         }
     }
