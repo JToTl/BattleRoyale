@@ -313,5 +313,14 @@ public class EventList implements Listener {
         }
     }
 
+    @EventHandler
+    public void breakcrops(PlayerInteractEvent e){
+        if (GlobalClass.runningGame!=null && GlobalClass.runningGame.isRunning){
+            if (e.getAction() == Action.PHYSICAL && e.getClickedBlock().getType().equals(Material.FARMLAND)){
+                e.setCancelled(true);
+            }
+        }
+    }
+
     
 }
