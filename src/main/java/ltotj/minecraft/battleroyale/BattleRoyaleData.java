@@ -527,8 +527,8 @@ public class BattleRoyaleData{
                 p.removePotionEffect(potion.getType());
                 p.getInventory().clear();
             }
-            p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
-            p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
+            p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,50,20));
+            p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION,50,20));
         }
     }
 
