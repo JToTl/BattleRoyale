@@ -386,6 +386,7 @@ public class BattleRoyaleData{
             if (!isRunning)return;
             for (UUID uuid : playerList.keySet()){
                 Player p = Bukkit.getPlayer(uuid);
+                if(p==null)continue;
                 Location location=new Location(GlobalClass.runningGame.world,GlobalClass.runningGame.playGround.nextCenter[0],100,GlobalClass.runningGame.playGround.nextCenter[1]),
                         plocation=p.getLocation();
                 p.setCompassTarget(location);
@@ -519,16 +520,15 @@ public class BattleRoyaleData{
             if(Bukkit.getPlayer(uuid)==null)continue;
             Player p=Bukkit.getPlayer(uuid);
             p.setGameMode(GameMode.ADVENTURE);
-            p.setFoodLevel(20);
             bossBar.addPlayer(p);
             //移動させたあとに実行p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
             //p.setHealth(fieldConfig.getInt("playerHealth")); なしにしましょう
             for(PotionEffect potion:p.getActivePotionEffects()){
                 p.removePotionEffect(potion.getType());
                 p.getInventory().clear();
-                p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
-                p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
             }
+            p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
+            p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,500,20));
         }
     }
 
