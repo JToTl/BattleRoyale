@@ -218,6 +218,10 @@ public class Commands implements CommandExecutor {
                     if (GlobalClass.runningGame == null) {
                         p.sendMessage("ゲームが設定されていません");
                     } else if (!GlobalClass.runningGame.isRunning) {
+                        if(!GlobalClass.runningGame.isGenerated){
+                            sender.sendMessage("先に/bat generate を実行してください");
+                            return true;
+                        }
                         GlobalClass.runningGame.preGameStart();
                         GlobalClass.runningGame.scoreboard(((Player) sender).getWorld());
                         GlobalClass.runningGame.runBattleRoyale.start();
