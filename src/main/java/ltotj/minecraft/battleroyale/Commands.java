@@ -12,6 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
+import java.util.UUID;
+
 public class Commands implements CommandExecutor {
 
     private final Plugin instance=Main.getPlugin(Main.class);
@@ -217,6 +219,13 @@ public class Commands implements CommandExecutor {
                         sender.sendMessage("銃の最大所持数を"+args[1]+"に設定しました");
                     }
                     break;
+                case "ban":
+                    if (GlobalClass.runningGame != null&&GlobalClass.runningGame.isEnd) {
+                        for (BattleRoyaleData.PlayerData data : GlobalClass.runningGame.playerList.values()) {
+                            Bukkit.getOfflinePlayer(data.uuid).banPlayer("参加済");
+                        }
+                    }
+                    break;
                 case "start":
                     if (GlobalClass.runningGame == null) {
                         p.sendMessage("ゲームが設定されていません");
@@ -292,10 +301,11 @@ public class Commands implements CommandExecutor {
                 case "test":
                     Entity entity=p.getWorld().spawnEntity(p.getLocation().add(0,20,0), EntityType.WITHER_SKULL);
                     entity.setCustomName("carepackage");
+                    break;
 
             }
         }
-        switch (args[0]) {//invが空じゃないと参加できない　もしできてもゲーム終了時にinvが空になるので自己責任ってことで、はい
+        switch (args[0]) {//invが空じゃないと参加できない
             case "join":
                 if (GlobalClass.runningGame == null) {
                     p.sendMessage("ただいまゲームは開催されていません");

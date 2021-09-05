@@ -160,9 +160,9 @@ public class EventList implements Listener {
     public void PlayerLogout(final PlayerQuitEvent e){
         if(GlobalClass.runningGame==null)return;
         if(GlobalClass.runningGame.playerList.containsKey(e.getPlayer().getUniqueId())) {
-            if (!GlobalClass.runningGame.isRunning) {
+            if (!GlobalClass.runningGame.isRunning&&!GlobalClass.runningGame.isEnd) {
                 GlobalClass.runningGame.playerList.remove(e.getPlayer().getUniqueId());
-            } else if (!GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())) {
+            } else if (!GlobalClass.runningGame.isEnd&&!GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())) {
                 GlobalClass.runningGame.playerList.get(e.getPlayer().getUniqueId()).generatePlayersChest(e.getPlayer());
                 e.getPlayer().getInventory().clear();
                 GlobalClass.runningGame.deadPlayerList.add(e.getPlayer().getUniqueId());
