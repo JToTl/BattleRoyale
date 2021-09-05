@@ -247,12 +247,14 @@ public class EventList implements Listener {
         p.getInventory().setItemInMainHand(item);
     }
 
-    @EventHandler//プレイヤーが死んだら生存人数のやつとかなんとかをいじって、終了ならスレッド止めてなんやかんやしましょう
+    @EventHandler//みにくいよー
     public void PlayerKilledEvent(PlayerDeathEvent e) {
         if (GlobalClass.runningGame != null && GlobalClass.runningGame.isRunning && GlobalClass.runningGame.playerList.containsKey(e.getEntity().getPlayer().getUniqueId())&&!GlobalClass.runningGame.deadPlayerList.contains(e.getEntity().getUniqueId())) {
             GlobalClass.runningGame.deadPlayerList.add(e.getEntity().getPlayer().getUniqueId());
             GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).generatePlayersChest(e.getEntity().getPlayer());
             e.getEntity().getInventory().clear();
+            e.getEntity().spigot().respawn();
+            e.getEntity().setGameMode(GameMode.SPECTATOR);
             if (e.getEntity().getKiller() != null) {
                 Player killer = e.getEntity().getKiller();
                 if (GlobalClass.runningGame.playerList.containsKey(killer.getUniqueId())) {
@@ -292,6 +294,7 @@ public class EventList implements Listener {
                     }
                 }
             }
+            e.getEntity().setSpectatorTarget(Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(e.getEntity().getUniqueId())));
             if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
                 GlobalClass.runningGame.endGame();
             }
