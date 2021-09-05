@@ -316,8 +316,18 @@ public class BattleRoyaleData{
 
                 setWBSize(2*nextwidth,time);
                 //world.getWorldBorder().setSize(2*nextwidth,time);
-                for(Player p:Bukkit.getOnlinePlayers()){
-                    p.playSound(p.getLocation(), Sound.ENTITY_WITHER_SPAWN,1,1);
+                broadcastMessage("§4==================");
+                broadcastMessage(" ");
+                broadcastMessage("§4エリア収縮が始まります！");
+                broadcastMessage("§4エリア収縮が始まります！");
+                broadcastMessage("§4エリア収縮が始まります！");
+                broadcastMessage(" ");
+                broadcastMessage("§4==================");
+                for(PlayerData pldata:playerList.values()){
+                    Player p=Bukkit.getPlayer(pldata.uuid);
+                    if(p!=null){
+                        p.playSound(p.getLocation(),Sound.ENTITY_WITHER_SPAWN,1F,1F);
+                    }
                 }
                 for(int i=0;i<time*20&&flag.get()&&currentwidth>1;i++){
                     if((time*20-i)%20==0){

@@ -253,8 +253,8 @@ public class EventList implements Listener {
             GlobalClass.runningGame.deadPlayerList.add(e.getEntity().getPlayer().getUniqueId());
             GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).generatePlayersChest(e.getEntity().getPlayer());
             e.getEntity().getInventory().clear();
-            e.getEntity().spigot().respawn();
             e.getEntity().setGameMode(GameMode.SPECTATOR);
+            e.getEntity().spigot().respawn();
             if (e.getEntity().getKiller() != null) {
                 Player killer = e.getEntity().getKiller();
                 if (GlobalClass.runningGame.playerList.containsKey(killer.getUniqueId())) {
@@ -294,10 +294,10 @@ public class EventList implements Listener {
                     }
                 }
             }
-            e.getEntity().setSpectatorTarget(Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(e.getEntity().getUniqueId())));
             if (GlobalClass.runningGame.playerList.size() <= GlobalClass.runningGame.deadPlayerList.size() + 1) {
                 GlobalClass.runningGame.endGame();
             }
+            e.getEntity().setSpectatorTarget(Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(e.getEntity().getUniqueId())));
         }
     }
 
@@ -313,6 +313,7 @@ public class EventList implements Listener {
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
             Component component=Component.text("/bat kansen ,または§e§l[ここをクリック]§rで観戦しましょう！").clickEvent(ClickEvent.runCommand("/battleroyale kansen"));
             e.getPlayer().sendMessage(component);
+            e.getPlayer().setSpectatorTarget(Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId())));
         }
     }
 
@@ -362,11 +363,11 @@ public class EventList implements Listener {
     }
 
     @EventHandler
-    public void spectatingEvent(PlayerStopSpectatingEntityEvent e){
+    public void SpectatingEvent(PlayerStopSpectatingEntityEvent e){
         if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&&GlobalClass.runningGame.deadPlayerList.contains(e.getPlayer().getUniqueId())){
-            e.setCancelled(true);
+            if(e.getSpectatorTarget().getUniqueId().equals(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId()))){
+                e.setCancelled(true);
+            }
         }
     }
-
-    
 }
