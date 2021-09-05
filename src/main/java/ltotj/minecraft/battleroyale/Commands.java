@@ -277,11 +277,11 @@ public class Commands implements CommandExecutor {
                     }
                     else{
                      for(Player player:GlobalClass.runningGame.world.getPlayers()){
-                         Location location=player.getLocation();
-                         if(location.clone().add(0,-1,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)||location.clone().add(0,-2,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)){
+//                         Location location=player.getLocation();
+//                         if(location.clone().add(0,-1,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)||location.clone().add(0,-2,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)){
                              player.getInventory().clear();
                              GlobalClass.runningGame.putParticipant(player);
-                         }
+//                         }
                         }
                     }
                     break;
