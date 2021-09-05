@@ -152,7 +152,12 @@ public class BattleRoyaleData{
             }
         }
 
-
+        public void removeItems(){
+            List<Entity> entities=world.getEntities();
+            for(Entity entity:entities){
+                if(entity.getType().equals(EntityType.DROPPED_ITEM))entity.eject();
+            }
+        }
 
         private void removeWorldBorder(){
             world.getWorldBorder().setSize(1000000);

@@ -191,6 +191,8 @@ public class Commands implements CommandExecutor {
                     }
                     else{
                         GlobalClass.runningGame.playGround.putLootChest();
+                        GlobalClass.runningGame.playGround.removeItems();
+                        p.sendMessage("チェストを生成しました");
                     }
                     break;
                 case "setgame":
