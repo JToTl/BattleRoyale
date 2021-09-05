@@ -249,7 +249,7 @@ public class EventList implements Listener {
 
     @EventHandler//プレイヤーが死んだら生存人数のやつとかなんとかをいじって、終了ならスレッド止めてなんやかんやしましょう
     public void PlayerKilledEvent(PlayerDeathEvent e) {
-        if (GlobalClass.runningGame != null && GlobalClass.runningGame.isRunning && GlobalClass.runningGame.playerList.containsKey(e.getEntity().getPlayer().getUniqueId())) {
+        if (GlobalClass.runningGame != null && GlobalClass.runningGame.isRunning && GlobalClass.runningGame.playerList.containsKey(e.getEntity().getPlayer().getUniqueId())&&!GlobalClass.runningGame.deadPlayerList.contains(e.getEntity().getUniqueId())) {
             GlobalClass.runningGame.deadPlayerList.add(e.getEntity().getPlayer().getUniqueId());
             GlobalClass.runningGame.playerList.get(e.getEntity().getPlayer().getUniqueId()).generatePlayersChest(e.getEntity().getPlayer());
             e.getEntity().getInventory().clear();

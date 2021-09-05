@@ -517,8 +517,8 @@ public class BattleRoyaleData{
 
     public void setPlayerStatus(){
         for(UUID uuid:playerList.keySet()){
-            if(Bukkit.getPlayer(uuid)==null)continue;
             Player p=Bukkit.getPlayer(uuid);
+            if(p==null)continue;
             p.setGameMode(GameMode.ADVENTURE);
             bossBar.addPlayer(p);
             //移動させたあとに実行p.getInventory().setArmorContents(new ItemStack[]{null,null,createCustomItem(Material.ELYTRA,"降下用エリトラ","着地すると消滅します"),null});
