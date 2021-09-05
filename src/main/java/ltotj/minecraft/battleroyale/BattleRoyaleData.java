@@ -316,7 +316,9 @@ public class BattleRoyaleData{
 
                 setWBSize(2*nextwidth,time);
                 //world.getWorldBorder().setSize(2*nextwidth,time);
-
+                for(Player p:Bukkit.getOnlinePlayers()){
+                    p.playSound(p.getLocation(), Sound.ENTITY_WITHER_SPAWN,1,1);
+                }
                 for(int i=0;i<time*20&&flag.get()&&currentwidth>1;i++){
                     if((time*20-i)%20==0){
                         setBossBar(time,time-(i/20),"エリア縮小終了");
