@@ -316,10 +316,9 @@ public class Commands implements CommandExecutor {
                     p.sendMessage("ただいまゲームは開催されていません");
                 } else if (GlobalClass.runningGame.isRunning) {
                     p.sendMessage("既にゲームが開始されています");
-                }else if(!p.getInventory().isEmpty()) {
-                    p.sendMessage("インベントリを空にしてください");
                 }else if (GlobalClass.runningGame.putParticipant(p)) {
                     p.sendMessage("参加者登録完了");
+                    p.getInventory().clear();
                     Bukkit.getServer().broadcast(Component.text(p.getName()+"が参加者登録しました"),Server.BROADCAST_CHANNEL_USERS);
                 } else {
                     p.sendMessage("既に参加者登録されています");

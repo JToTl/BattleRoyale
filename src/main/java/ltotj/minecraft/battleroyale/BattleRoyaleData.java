@@ -541,8 +541,8 @@ public class BattleRoyaleData{
             //p.setHealth(fieldConfig.getInt("playerHealth")); なしにしましょう
             for(PotionEffect potion:p.getActivePotionEffects()){
                 p.removePotionEffect(potion.getType());
-                p.getInventory().clear();
             }
+            p.getInventory().clear();
             p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,50,20));
             p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION,50,20));
         }
