@@ -205,7 +205,7 @@ public class Commands implements CommandExecutor {
                     } else {
                         GlobalClass.runningGame = new BattleRoyaleData(args[1], args[2]);
                         p.sendMessage("新規ゲーム開設完了");
-                        Bukkit.getServer().broadcast(Component.text("§5バトルロワイヤルが間も無く開催されます！/battleroyale join で参加登録をしましょう！"),Server.BROADCAST_CHANNEL_USERS);
+                        Bukkit.getServer().broadcast(Component.text("§5バトルロワイヤルが間も無く開催されます！/bat join で参加登録をしましょう！"),Server.BROADCAST_CHANNEL_USERS);
                     }
                     break;
                 case "check":
@@ -222,8 +222,13 @@ public class Commands implements CommandExecutor {
                 case "ban":
                     if (GlobalClass.runningGame != null&&GlobalClass.runningGame.isEnd) {
                         for (BattleRoyaleData.PlayerData data : GlobalClass.runningGame.playerList.values()) {
-                            Bukkit.getOfflinePlayer(data.uuid).banPlayer("参加済");
+                            if(!Bukkit.getOfflinePlayer(data.uuid).isOp())Bukkit.getOfflinePlayer(data.uuid).banPlayer("参加済");
                         }
+                    }
+                    break;
+                case "pardon":
+                    for(OfflinePlayer player:Bukkit.getBannedPlayers()) {
+                        Bukkit.getBanList(BanList.Type.NAME).pardon(player.getName());
                     }
                     break;
                 case "start":

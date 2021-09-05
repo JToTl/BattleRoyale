@@ -370,4 +370,12 @@ public class EventList implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void JoinEvent(PlayerJoinEvent e){
+        if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&& GlobalClass.runningGame.spectatorList.containsKey(e.getPlayer().getUniqueId())){
+            e.getPlayer().setGameMode(GameMode.SPECTATOR);
+            e.getPlayer().setSpectatorTarget(Bukkit.getPlayer(GlobalClass.runningGame.spectatorList.get(e.getPlayer().getUniqueId())));
+        }
+    }
 }
