@@ -133,7 +133,7 @@ public class BattleRoyaleData{
             }
         }
 
-        private void removeLootChest(){
+        public void removeLootChest(){
             for(String str:fieldConfig.getConfigurationSection("chestPosition").getKeys(false)){
                 Location removelocation=new Location(world, fieldConfig.getDouble("chestPosition." + str + ".X"), fieldConfig.getDouble("chestPosition." + str + ".Y"), fieldConfig.getDouble("chestPosition." + str + ".Z"));
                 if(removelocation.getBlock().getState() instanceof Chest){
@@ -475,7 +475,6 @@ public class BattleRoyaleData{
                 if(!deadPlayerList.contains(uuid)){
                     broadcastMessage("§l§6"+Bukkit.getPlayer(uuid).getName()+"がバトルロワイヤルを制しました！");
                     winner=uuid;
-                    Bukkit.getPlayer(uuid).getInventory().clear();
                     break;
                 }
             }
@@ -484,7 +483,7 @@ public class BattleRoyaleData{
         playGround.removeWorldBorder();
         playGround.removePlayersChest();
         playGround.removeCarePackage();
-        playGround.removeLootChest();
+        //playGround.removeLootChest();
         isRunning=false;
         isEnd=true;
         playGround.removeEntities();

@@ -178,6 +178,7 @@ public class Commands implements CommandExecutor {
                         p.sendMessage("既にゲームが開始されています 中止したい場合は/battleroyale stop を使用してください");
                         return true;
                     }
+                    GlobalClass.runningGame.playGround.removeLootChest();
                     GlobalClass.runningGame = null;
                     Bukkit.getServer().broadcast(Component.text("ゲームが削除されました"),Server.BROADCAST_CHANNEL_USERS);
                     break;
@@ -264,6 +265,7 @@ public class Commands implements CommandExecutor {
                         break;
                     }
                     GlobalClass.runningGame.endGame();
+                    GlobalClass.runningGame.playGround.removeLootChest();
                     GlobalClass.runningGame = null;
                     p.sendMessage("バトルロワイヤルを中断しました");
                     break;
