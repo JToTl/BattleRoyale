@@ -155,7 +155,7 @@ public class BattleRoyaleData{
         public void removeItems(){
             List<Entity> entities=world.getEntities();
             for(Entity entity:entities){
-                if(entity.getType().equals(EntityType.DROPPED_ITEM))entity.eject();
+                if(entity.getType().equals(EntityType.DROPPED_ITEM))entity.remove();
             }
         }
 
