@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
+import java.util.List;
 import java.util.UUID;
 
 public class Commands implements CommandExecutor {
@@ -29,7 +30,7 @@ public class Commands implements CommandExecutor {
         Bukkit.getServer().broadcast(Component.text(message),Server.BROADCAST_CHANNEL_USERS);
     }
 
-    private void checkYml(String str,Player p){
+    private void checkYml(String str,CommandSender p){
         p.sendMessage("ファイルの構成をチェック中・・・");
         CustomConfig config=new CustomConfig(instance,str);
         config.getConfig();
@@ -74,14 +75,14 @@ public class Commands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("プレイヤー以外は実行できません");
-            return true;
-        }
-        Player p=(Player) sender;
-        if (args.length != 0&&p.hasPermission("op")) {
+        if (args.length != 0&&sender.hasPermission("op")) {
             switch (args[0]) {
                 case "lootchest":
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage("プレイヤー以外は実行できません");
+                        return true;
+                    }
+                    Player p=(Player)sender;
                     if (args.length < 2) break;
                     else if (GlobalClass.editedConfig == null) {
                         p.sendMessage("設定するファイルを選択してください /bbattleroyale editfield <ファイル名(.ymlまで)>");
@@ -147,37 +148,37 @@ public class Commands implements CommandExecutor {
                     break;
                 case "editfield":
                     if (args.length < 2) {
-                        p.sendMessage("ファイルを指定してください");
+                        sender.sendMessage("ファイルを指定してください");
                         return true;
                     }
                     try {
                         GlobalClass.editedConfig = new CustomConfig(instance, args[1]);
                         Bukkit.getServer().broadcast(Component.text(args[1] + "をeditfieldとして設定しました"), Server.BROADCAST_CHANNEL_USERS);
                     } catch (NullPointerException e) {
-                        p.sendMessage(args[1] + "は存在しません");
+                        sender.sendMessage(args[1] + "は存在しません");
                     }
                     break;
                 case "setrate":
                     if (GlobalClass.runningGame == null || GlobalClass.runningGame.isRunning) {
-                        p.sendMessage("準備中のゲームが存在しません");
+                        sender.sendMessage("準備中のゲームが存在しません");
                         return true;
                     }
                     try {
                         double d = Double.parseDouble(args[1]);
-                        if (Math.abs(d - 0.5) > 0.5) p.sendMessage("0~1の数値を指定してください");
+                        if (Math.abs(d - 0.5) > 0.5) sender.sendMessage("0~1の数値を指定してください");
                         else {
                             GlobalClass.runningGame.probability = d;
-                            p.sendMessage("チェストの出現率を" + d + "に設定しました");
+                            sender.sendMessage("チェストの出現率を" + d + "に設定しました");
                         }
                     } catch (NumberFormatException e) {
-                        p.sendMessage("チェストの出現率は0~1の数値で指定してください");
+                        sender.sendMessage("チェストの出現率は0~1の数値で指定してください");
                     }
                     return true;
                 case "cancel":
                     if (GlobalClass.runningGame == null) {
-                        p.sendMessage("ゲームが存在しません");
+                        sender.sendMessage("ゲームが存在しません");
                     } else if (GlobalClass.runningGame.isRunning) {
-                        p.sendMessage("既にゲームが開始されています 中止したい場合は/battleroyale stop を使用してください");
+                        sender.sendMessage("既にゲームが開始されています 中止したい場合は/battleroyale stop を使用してください");
                         return true;
                     }
                     GlobalClass.runningGame.playGround.removeLootChest();
@@ -186,31 +187,31 @@ public class Commands implements CommandExecutor {
                     break;
                 case "generate":
                     if(GlobalClass.runningGame==null){
-                        p.sendMessage("ゲームが存在しません");
+                        sender.sendMessage("ゲームが存在しません");
                     }
                     else if(GlobalClass.runningGame.isGenerated){
-                        p.sendMessage("既に生成されています");
+                        sender.sendMessage("既に生成されています");
                     }
                     else{
                         GlobalClass.runningGame.playGround.putLootChest();
                         GlobalClass.runningGame.playGround.removeItems();
-                        p.sendMessage("チェストを生成しました");
+                        sender.sendMessage("チェストを生成しました");
                     }
                     break;
                 case "setgame":
                     if (args.length < 2) {
-                        p.sendMessage("/ setgame ステージ アイテムリスト で新規ゲームを開設");
+                        sender.sendMessage("/ setgame ステージ アイテムリスト で新規ゲームを開設");
                     } else if (GlobalClass.runningGame != null) {
-                        p.sendMessage("既にゲームが開設されています /battleroyale cancelまたは/battleroyale stopで安全にゲームを閉じてから再設定してください");
+                        sender.sendMessage("既にゲームが開設されています /battleroyale cancelまたは/battleroyale stopで安全にゲームを閉じてから再設定してください");
                     } else {
                         GlobalClass.runningGame = new BattleRoyaleData(args[1], args[2]);
-                        p.sendMessage("新規ゲーム開設完了");
-                        Bukkit.getServer().broadcast(Component.text("§5バトルロワイヤルが間も無く開催されます！/bat join で参加登録をしましょう！"),Server.BROADCAST_CHANNEL_USERS);
+                        sender.sendMessage("新規ゲーム開設完了");
+                        //Bukkit.getServer().broadcast(Component.text("§5バトルロワイヤルが間も無く開催されます！/bat join で参加登録をしましょう！"),Server.BROADCAST_CHANNEL_USERS);
                     }
                     break;
                 case "check":
                     if(args.length>1){
-                        checkYml(args[1],p);
+                        checkYml(args[1],sender);
                     }
                     break;
                 case "guns":
@@ -221,9 +222,14 @@ public class Commands implements CommandExecutor {
                     break;
                 case "ban":
                     if (GlobalClass.runningGame != null&&GlobalClass.runningGame.isEnd) {
+                        List<String> currentPlayers=Main.participants.getConfig().getStringList("player");
                         for (BattleRoyaleData.PlayerData data : GlobalClass.runningGame.playerList.values()) {
-                            if(!Bukkit.getOfflinePlayer(data.uuid).isOp())Bukkit.getOfflinePlayer(data.uuid).banPlayer("参加済");
+                            if(!Bukkit.getOfflinePlayer(data.uuid).isOp()){
+                                Bukkit.getOfflinePlayer(data.uuid).banPlayer("参加済");
+                                currentPlayers.add(data.name);
+                            }
                         }
+                        Main.participants.getConfig().set("player",currentPlayers);
                     }
                     break;
                 case "pardon":
@@ -233,39 +239,39 @@ public class Commands implements CommandExecutor {
                     break;
                 case "start":
                     if (GlobalClass.runningGame == null) {
-                        p.sendMessage("ゲームが設定されていません");
+                        sender.sendMessage("ゲームが設定されていません");
                     } else if (!GlobalClass.runningGame.isRunning) {
                         if(!GlobalClass.runningGame.isGenerated){
                             sender.sendMessage("先に/bat generate を実行してください");
                             return true;
                         }
                         GlobalClass.runningGame.preGameStart();
-                        GlobalClass.runningGame.scoreboard(((Player) sender).getWorld());
+                        GlobalClass.runningGame.scoreboard();
                         GlobalClass.runningGame.runBattleRoyale.start();
-                        GlobalClass.runningGame.scoreboard(((Player) sender).getWorld());
+                        GlobalClass.runningGame.scoreboard();
                         GlobalClass.runningGame.playGround.carePackageThread.runTaskTimer(instance, 300, 20 * GlobalClass.runningGame.fieldConfig.getInt("carePackage.frequency"));
                     } else {
-                        p.sendMessage("既にゲームが行われています");
+                        sender.sendMessage("既にゲームが行われています");
                     }
                     break;
                 case "show":
                     if(GlobalClass.runningGame==null){
-                        p.sendMessage("ゲームが設定されていません");
+                        sender.sendMessage("ゲームが設定されていません");
                     }
                     else if(args.length<2){
-                        p.sendMessage("足りないよ！");
+                        sender.sendMessage("足りないよ！");
                     }
                     else {
                         switch (args[1]) {
                             case "player":
-                                p.sendMessage("参加登録者は以下の通りです");
+                                sender.sendMessage("参加登録者は以下の通りです");
                                 for (BattleRoyaleData.PlayerData playerData : GlobalClass.runningGame.playerList.values()) {
-                                    p.sendMessage(playerData.name);
+                                    sender.sendMessage(playerData.name);
                                 }
                                 break;
                             case "ranking":
                                 if (GlobalClass.runningGame.isRunning) {
-                                    p.sendMessage("ゲームが終了していません");
+                                    sender.sendMessage("ゲームが終了していません");
                                     break;
                                 }
                                 GlobalClass.runningGame.broadcastRanking();
@@ -277,25 +283,41 @@ public class Commands implements CommandExecutor {
                     break;
                 case "stop":
                     if (GlobalClass.runningGame == null || !GlobalClass.runningGame.isRunning) {
-                        p.sendMessage("バトルロワイヤルはただいま開催されていません");
+                        sender.sendMessage("バトルロワイヤルはただいま開催されていません");
                         break;
                     }
                     GlobalClass.runningGame.endGame();
                     GlobalClass.runningGame.playGround.removeLootChest();
                     GlobalClass.runningGame = null;
-                    p.sendMessage("バトルロワイヤルを中断しました");
+                    sender.sendMessage("バトルロワイヤルを中断しました");
+                    break;
+                case "kick":
+                    List<String> players=Main.participants.getConfig().getStringList("player");
+                    for(Player player:Bukkit.getServer().getOnlinePlayers()){
+                        if(players.contains(player.getName())&&!player.isOp()){
+                            player.kick(Component.text("既に参加済みです"));
+                        }
+                    }
+                    break;
+                case "saveplayer":
+                    List<String> currentPlayers=Main.participants.getConfig().getStringList("player");
+                    for(BattleRoyaleData.PlayerData playerData:GlobalClass.runningGame.playerList.values()){
+                        currentPlayers.add(playerData.name);
+                    }
+                    Main.participants.getConfig().set("player",currentPlayers);
                     break;
                 case "joinalpl":
                     if(GlobalClass.runningGame==null||GlobalClass.runningGame.isRunning||GlobalClass.runningGame.isEnd){
-                        p.sendMessage("ゲームが存在しないか、既に開始されています");
+                        sender.sendMessage("ゲームが存在しないか、既に開始されています");
                     }
                     else{
-                     for(Player player:GlobalClass.runningGame.world.getPlayers()){
+                     for(Player player:Bukkit.getServer().getOnlinePlayers()){
                          if(player.isOp())continue;
 //                         Location location=player.getLocation();
 //                         if(location.clone().add(0,-1,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)||location.clone().add(0,-2,0).getBlock().getType().equals(Material.DIAMOND_BLOCK)){
                              player.getInventory().clear();
                              GlobalClass.runningGame.putParticipant(player);
+                             player.sendMessage("§eゲームへの参加登録が完了しました!");
 //                         }
                         }
                     }
@@ -303,14 +325,13 @@ public class Commands implements CommandExecutor {
                 case "spec":
                     Bukkit.getPlayer(args[1]).setSpectatorTarget(Bukkit.getPlayer(args[2]));
                     break;
-                case "test":
-                    Entity entity=p.getWorld().spawnEntity(p.getLocation().add(0,20,0), EntityType.WITHER_SKULL);
-                    entity.setCustomName("carepackage");
-                    break;
-
             }
         }
-        switch (args[0]) {//invが空じゃないと参加できない
+        if (!(sender instanceof Player)) {
+            return true;
+        }
+        Player p=(Player)sender;
+        switch (args[0]) {
             case "join":
                 if (GlobalClass.runningGame == null) {
                     p.sendMessage("ただいまゲームは開催されていません");
@@ -332,7 +353,7 @@ public class Commands implements CommandExecutor {
                 }
                 break;
             case "survivor":
-                if(GlobalClass.runningGame!=null) p.sendMessage("残り人数"+GlobalClass.runningGame.LivingPlayers()+"人");
+                if(GlobalClass.runningGame!=null) sender.sendMessage("残り人数"+GlobalClass.runningGame.LivingPlayers()+"人");
                 break;
             case "kansen":
                 if(GlobalClass.runningGame!=null&&GlobalClass.runningGame.isRunning&& GlobalClass.runningGame.spectatorList.containsKey(((Player) sender).getUniqueId())){

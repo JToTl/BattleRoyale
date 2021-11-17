@@ -397,7 +397,7 @@ public class BattleRoyaleData{
         });
     }
 
-    void scoreboard(World world){
+    void scoreboard(){
         ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
         Bukkit.getScheduler().runTaskTimer(instance, Runnable->{
             if (!isRunning)return;
